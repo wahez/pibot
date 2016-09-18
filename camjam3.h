@@ -41,6 +41,18 @@ namespace Pi
     };
 
 
+    class LineSensor
+    {
+    public:
+        LineSensor(PinNumber);
+
+        bool IsOnLine();
+
+    private:
+        InputPin _pin;
+    };
+
+
     class Bot
     {
     public:
@@ -59,6 +71,7 @@ namespace Pi
     private:
         Motor _left;
         Motor _right;
+        LineSensor _lineSensor;
     };
 
 

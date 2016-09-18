@@ -42,4 +42,16 @@ namespace Pi
     };
 
 
+    class InputPin
+    {
+    public:
+        InputPin(PinNumber pin);
+
+        bool read();
+
+    private:
+        PinNumber _pin;
+    };
+
+
 }

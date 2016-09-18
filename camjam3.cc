@@ -53,9 +53,22 @@ namespace Pi
     }
 
 
+    LineSensor::LineSensor(PinNumber pin)
+        : _pin(pin)
+    {
+    }
+
+
+    bool LineSensor::IsOnLine()
+    {
+        return _pin.read();
+    }
+
+
     Bot::Bot()
         : _left(7, 8)
         , _right(10, 9)
+        , _lineSensor(25)
     {}
 
 

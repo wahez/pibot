@@ -45,7 +45,21 @@ namespace Pi
 
     void OutputPin::set(bool value)
     {
-        digitalWrite(_pin, value?1:0);
+        digitalWrite(_pin, value ? HIGH : LOW);
+    }
+
+
+    InputPin::InputPin(PinNumber pin)
+        : _pin(pin)
+    {
+        Init();
+        pinMode(_pin, INPUT);
+    }
+
+
+    bool InputPin::read()
+    {
+        return digitalRead(_pin) == HIGH;
     }
 
 
