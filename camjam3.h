@@ -31,9 +31,10 @@ namespace Pi
     public:
         Motor(PinNumber forwardPin, PinNumber reversePin);
 
-        void stop();
-        void forward();
-        void reverse();
+        void stop()    { move(0); }
+        void forward() { move(1); }
+        void reverse() { move(-1); }
+        void move(float direction);
 
     private:
         OutputPin _forwardPin;
@@ -58,7 +59,7 @@ namespace Pi
     public:
         DistanceSensor(PinNumber trigger, PinNumber echo);
 
-        double distance();
+        float distance();
 
     private:
         OutputPin _trigger;
@@ -71,15 +72,17 @@ namespace Pi
     public:
         Bot();
 
-        void forward();
-        void reverse();
-        void stop();
-        void forwardLeft();
-        void reverseLeft();
-        void forwardRight();
-        void reverseRight();
-        void rotateLeft();
-        void rotateRight();
+        void forward()      { move( 1,  1); }
+        void reverse()      { move(-1, -1); }
+        void stop()         { move( 0,  0); }
+        void forwardLeft()  { move( 0,  1); }
+        void reverseLeft()  { move( 0, -1); }
+        void forwardRight() { move( 1,  0); }
+        void reverseRight() { move(-1,  0); }
+        void rotateLeft()   { move(-1,  1); }
+        void rotateRight()  { move( 1, -1); }
+
+        void move(float left, float right);
 
     private:
         Motor _left;

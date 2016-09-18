@@ -35,24 +35,23 @@ namespace Pi
     }
 
 
-    void Motor::stop()
+    void Motor::move(float direction)
     {
-        _forwardPin.set(false);
-        _reversePin.set(false);
-    }
-
-
-    void Motor::forward()
-    {
-        _forwardPin.set(true);
-        _reversePin.set(false);
-    }
-
-
-    void Motor::reverse()
-    {
-        _forwardPin.set(false);
-        _reversePin.set(true);
+        if (direction > 0.5)
+        {
+            _forwardPin.set(true);
+            _reversePin.set(false);
+        }
+        else if (direction < -0.5)
+        {
+            _forwardPin.set(false);
+            _reversePin.set(true);
+        }
+        else
+        {
+            _forwardPin.set(false);
+            _reversePin.set(false);
+        }
     }
 
 
@@ -76,7 +75,7 @@ namespace Pi
     }
 
 
-    double DistanceSensor::distance()
+    float DistanceSensor::distance()
     {
         using namespace std::literals;
         _trigger.set(true);
@@ -91,7 +90,7 @@ namespace Pi
             now = std::chrono::high_resolution_clock::now();
             if (now >= end) return 0;
         }
-        using FloatSeconds = std::chrono::duration<double, std::chrono::seconds::period>;
+        using FloatSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
         auto elapsed = FloatSeconds(now - start);
         auto distance = elapsed.count() * 343.260 / 2;
         return distance;
@@ -105,66 +104,10 @@ namespace Pi
     {}
 
 
-    void Bot::forward()
+    void Bot::move(float left, float right)
     {
-        _left.forward();
-        _right.forward();
-    }
-
-
-    void Bot::reverse()
-    {
-        _left.reverse();
-        _right.reverse();
-    }
-
-
-    void Bot::stop()
-    {
-        _left.stop();
-        _right.stop();
-    }
-
-
-    void Bot::forwardLeft()
-    {
-        _left.stop();
-        _right.forward();
-    }
-
-
-    void Bot::reverseLeft()
-    {
-        _left.stop();
-        _right.reverse();
-    }
-
-
-    void Bot::forwardRight()
-    {
-        _left.forward();
-        _right.stop();
-    }
-
-
-    void Bot::reverseRight()
-    {
-        _left.reverse();
-        _right.stop();
-    }
-
-
-    void Bot::rotateLeft()
-    {
-        _left.reverse();
-        _right.forward();
-    }
-
-
-    void Bot::rotateRight()
-    {
-        _left.forward();
-        _right.reverse();
+        _left.move(left);
+        _right.move(right);
     }
 
 
