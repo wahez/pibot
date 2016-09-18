@@ -53,6 +53,19 @@ namespace Pi
     };
 
 
+    class DistanceSensor
+    {
+    public:
+        DistanceSensor(PinNumber trigger, PinNumber echo);
+
+        double distance();
+
+    private:
+        OutputPin _trigger;
+        InputPin _echo;
+    };
+
+
     class Bot
     {
     public:

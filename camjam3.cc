@@ -19,6 +19,9 @@
 
 #include "camjam3.h"
 
+#include <thread>
+#include <chrono>
+
 
 namespace Pi
 {
@@ -62,6 +65,36 @@ namespace Pi
     bool LineSensor::IsOnLine()
     {
         return _pin.read();
+    }
+
+
+    DistanceSensor::DistanceSensor(PinNumber trigger, PinNumber echo)
+        : _trigger(trigger)
+        , _echo(echo)
+    {
+        _trigger.set(false);
+    }
+
+
+    double DistanceSensor::distance()
+    {
+        using namespace std::literals;
+        _trigger.set(true);
+        std::this_thread::sleep_for(10us);
+        auto start = std::chrono::high_resolution_clock::now();
+        _trigger.set(false);
+
+        auto end = start + 40ms;
+        auto now = start;
+        while (!_echo.read())
+        {
+            now = std::chrono::high_resolution_clock::now();
+            if (now >= end) return 0;
+        }
+        using FloatSeconds = std::chrono::duration<double, std::chrono::seconds::period>;
+        auto elapsed = FloatSeconds(now - start);
+        auto distance = elapsed.count() * 343.260 / 2;
+        return distance;
     }
 
 
