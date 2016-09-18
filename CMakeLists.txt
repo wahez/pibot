@@ -24,6 +24,8 @@ add_executable(
     pibot
     camjam3.h
     camjam3.cc
+    input.h
+    input.cc
     bot.cc
     gpio.h
     gpio.cc

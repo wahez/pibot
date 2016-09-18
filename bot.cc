@@ -18,48 +18,22 @@
 */
 
 #include "camjam3.h"
+#include "input.h"
 
-#include <curses.h>
 #include <chrono>
-#include <stdexcept>
 #include <thread>
-
-
-class Window
-{
-public:
-    Window()
-    {
-        _mainwin = initscr();
-        if (_mainwin == nullptr)
-        {
-            throw std::runtime_error("Error initializing ncurses");
-        }
-        noecho();
-    }
-    ~Window()
-    {
-        delwin(_mainwin);
-        endwin();
-    }
-
-private:
-    WINDOW* _mainwin;
-};
 
 
 int main() {
     using namespace std::literals;
     Pi::Bot bot;
-    Window window;
+    Input::Window window;
 
-    mvaddstr(5, 10, "Press a key (' ' to quit)...");
-    mvprintw(7, 10, "You pressed: ");
-    refresh();
+    window.text("Press a key (' ' to quit)...");
 
     for (;;)
     {
-        auto ch = getch();
+        auto ch = window.getChar();
         switch (ch)
         {
         case 'q':
@@ -93,7 +67,6 @@ int main() {
         if (ch == ' ')
             break;
             
-        refresh();
         std::this_thread::sleep_for(10ms);
     }
 }
