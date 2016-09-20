@@ -18,12 +18,13 @@
 cmake_minimum_required(VERSION 3.0)
 project(pibot++)
 
-add_definitions(-std=c++14)
+add_definitions(-std=c++1y)
 
 add_executable(
     pibot
     camjam3.h
     camjam3.cc
+    event.h
     input.h
     input.cc
     bot.cc

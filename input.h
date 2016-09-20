@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "event.h"
 #include <string>
 
 
@@ -32,11 +33,12 @@ namespace Input {
 
         void text(const std::string&);
 
-        char getChar();
+        Event getEvent();
 
         ~Window();
 
     private:
+        char getChar();
         void* _handle;
     };
 

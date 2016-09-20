@@ -22,6 +22,25 @@
 
 #include <chrono>
 #include <thread>
+#include <iterator>
+#include <cmath>
+
+
+namespace {
+
+    template<size_t N>
+    auto interpolate(const float(&container)[N], float x)
+    {
+        x -= std::floor(x);
+        x *= N-1;
+        size_t index = std::floor(x);
+        auto fraction = x - index;
+        return
+            container[index] * (1-fraction) +
+            container[index+1] * fraction;
+    }
+
+}
 
 
 int main() {
@@ -29,44 +48,17 @@ int main() {
     Pi::Bot bot;
     Input::Window window;
 
-    window.text("Press a key (' ' to quit)...");
-
     for (;;)
     {
-        auto ch = window.getChar();
-        switch (ch)
-        {
-        case 'q':
-            bot.forwardLeft();
-            break;
-        case 'w':
-            bot.forward();
-            break;
-        case 'e':
-            bot.forwardRight();
-            break;
-        case 'a':
-            bot.rotateLeft();
-            break;
-        case 's':
-            bot.stop();
-            break;
-        case 'd':
-            bot.rotateRight();
-            break;
-        case 'z':
-            bot.reverseLeft();
-            break;
-        case 'x':
-            bot.reverse();
-            break;
-        case 'c':
-            bot.reverseRight();
-            break;
-        }
-        if (ch == ' ')
-            break;
-            
+        auto event = window.getEvent();
+        if (event.shutdown) break;
+
+        constexpr const float directionToMotorSpeed[] = {1, 0, -1, -1, -1, 0, 1, 1, 1};
+        float rm = interpolate(directionToMotorSpeed, event.direction / (2*M_PI));
+        float lm = interpolate(directionToMotorSpeed, 1-(event.direction / (2*M_PI)));
+
+        bot.move(event.speed * lm, event.speed * rm);
+
         std::this_thread::sleep_for(10ms);
     }
 }

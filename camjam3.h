@@ -72,16 +72,6 @@ namespace Pi
     public:
         Bot();
 
-        void forward()      { move( 1,  1); }
-        void reverse()      { move(-1, -1); }
-        void stop()         { move( 0,  0); }
-        void forwardLeft()  { move( 0,  1); }
-        void reverseLeft()  { move( 0, -1); }
-        void forwardRight() { move( 1,  0); }
-        void reverseRight() { move(-1,  0); }
-        void rotateLeft()   { move(-1,  1); }
-        void rotateRight()  { move( 1, -1); }
-
         void move(float left, float right);
 
     private:

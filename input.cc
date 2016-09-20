@@ -21,6 +21,7 @@
 
 #include <curses.h>
 #include <stdexcept>
+#include <cmath>
 
 
 namespace Input {
@@ -34,6 +35,7 @@ namespace Input {
             throw std::runtime_error("Error initializing ncurses");
         }
         noecho();
+        text("Press a key (' ' to quit)...");
     }
 
 
@@ -41,6 +43,51 @@ namespace Input {
     {
         mvaddstr(5, 10, t.c_str());
         refresh();
+    }
+
+
+    Event Window::getEvent()
+    {
+        constexpr float DIR = 2 * M_PI / 8;
+        Event event;
+        event.speed = 1;
+        auto ch = getChar();
+        switch (ch)
+        {
+        case ' ':
+            event.shutdown = true;
+            break;
+        case 's':
+            event.speed = 0;
+            break;
+        case 'w':
+            event.direction = 0 * DIR;
+            break;
+        case 'e':
+            event.direction = 1 * DIR;
+            break;
+        case 'd':
+            event.direction = 2 * DIR;
+            break;
+        case 'c':
+            event.direction = 3 * DIR;
+            break;
+        case 'x':
+            event.direction = 4 * DIR;
+            break;
+        case 'z':
+            event.direction = 5 * DIR;
+            break;
+        case 'a':
+            event.direction = 6 * DIR;
+            break;
+        case 'q':
+            event.direction = 7 * DIR;
+            break;
+        default:
+            event.speed = 0;
+        }
+        return event;
     }
 
 
