@@ -72,7 +72,7 @@ namespace Pi
     public:
         Bot();
 
-        void move(float left, float right);
+        void move(float direction, float speed);
 
     private:
         Motor _left;

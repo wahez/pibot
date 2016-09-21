@@ -35,7 +35,6 @@ namespace Input {
             throw std::runtime_error("Error initializing ncurses");
         }
         noecho();
-        text("Press a key (' ' to quit)...");
     }
 
 

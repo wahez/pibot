@@ -17,28 +17,30 @@
     along with pibot++. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "camjam3.h"
-#include "input.h"
-#include "wiimote.h"
+#pragma once
 
-#include <chrono>
-#include <thread>
+#include "event.h"
+
+#include <memory>
 
 
-int main() {
-    using namespace std::literals;
-    Pi::Bot bot;
-    Input::Window window;
-    window.text("Press 1+2 on the wiimote");
-    Input::WiiMote wiimote;
+namespace Input {
 
-    for (;;)
+
+    class WiiMote
     {
-//        auto event = window.getEvent();
-        auto event = wiimote.getEvent();
-        if (event.shutdown) break;
-        bot.move(event.direction, event.speed);
-        std::this_thread::sleep_for(10ms);
-    }
-}
+    public:
+        WiiMote();
+        ~WiiMote();
 
+        Event getEvent();
+
+        void rumble(bool on);
+        void setLed(unsigned char led, bool state);
+
+    private:
+        std::unique_ptr<class WiiMoteImpl> _impl;
+    };
+
+
+}

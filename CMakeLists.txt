@@ -27,9 +27,11 @@ add_executable(
     event.h
     input.h
     input.cc
+    wiimote.h
+    wiimote.cc
     bot.cc
     gpio.h
     gpio.cc
 )
 
-target_link_libraries(pibot wiringPi ncurses)
+target_link_libraries(pibot wiringPi ncurses cwiid)

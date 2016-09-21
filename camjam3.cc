@@ -21,10 +21,28 @@
 
 #include <thread>
 #include <chrono>
+#include <cmath>
 
 
 namespace Pi
 {
+
+
+    namespace {
+
+        template<size_t N>
+        auto interpolate(const float(&container)[N], float x)
+        {
+            x -= std::floor(x);
+            x *= N-1;
+            size_t index = std::floor(x);
+            auto fraction = x - index;
+            return
+                container[index] * (1-fraction) +
+                container[index+1] * fraction;
+        }
+
+    }
 
 
     Motor::Motor(PinNumber forwardPin, PinNumber reversePin)
@@ -104,10 +122,21 @@ namespace Pi
     {}
 
 
-    void Bot::move(float left, float right)
+    void Bot::move(float direction, float speed)
     {
-        _left.move(left);
-        _right.move(right);
+        if (speed < 0.1)
+        {
+            _left.move(0);
+            _right.move(0);
+        }
+        else
+        {
+            constexpr const float directionToMotorSpeed[] = {1, 0, -1, -1, -1, 0, 1, 1, 1};
+            float rm = interpolate(directionToMotorSpeed, direction / (2*M_PI));
+            float lm = interpolate(directionToMotorSpeed, 1-(direction / (2*M_PI)));
+            _left.move(lm*speed);
+            _right.move(rm*speed);
+        }
     }
 
 
