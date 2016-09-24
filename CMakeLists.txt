@@ -27,6 +27,8 @@ add_executable(
     event.h
     input.h
     input.cc
+    loop.h
+    loop.cc
     wiimote.h
     wiimote.cc
     bot.cc

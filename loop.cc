@@ -17,34 +17,37 @@
     along with pibot++. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "camjam3.h"
-#include "input.h"
-#include "wiimote.h"
 #include "loop.h"
 
-#include <chrono>
 #include <thread>
 
 
-int main() {
-    using namespace std::literals;
-    Pi::Bot bot;
-    Input::Window window;
-    window.text("Press 1+2 on the wiimote");
-    Input::WiiMote wiimote;
-    Pi::Loop loop;
+namespace Pi
+{
 
-    std::function<void()> code = [&]()
+
+    void Loop::run()
     {
-//        auto event = window.getEvent();
-        auto event = wiimote.getEvent();
-        if (event.shutdown) loop.stop();
-        bot.move(event.direction, event.speed);
-        loop.set_alarm(10ms, code);
-    };
-    loop.set_alarm(10ms, code);
+        _running = true;
+        while (_running && !_alarms.empty())
+        {
+            auto now = std::chrono::high_resolution_clock::now();
+            auto nextAlarm = _alarms.top();
+            _alarms.pop();
+            auto timeToWait = nextAlarm.time - now;
+            if (timeToWait.count() > 0)
+            {
+                std::this_thread::sleep_for(timeToWait);
+            }
+            nextAlarm.func();
+        }
+    }
 
-    loop.run();
+
+    void Loop::stop()
+    {
+        _running = false;
+    }
+
 
 }
-
