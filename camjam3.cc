@@ -116,8 +116,8 @@ namespace Pi
 
 
     Bot::Bot()
-        : _left(7, 8)
-        , _right(10, 9)
+        : _left(8, 7)
+        , _right(9, 10)
         , _lineSensor(25)
     {}
 
