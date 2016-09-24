@@ -31,7 +31,7 @@ namespace Pi
         _running = true;
         while (_running && !_alarms.empty())
         {
-            auto now = std::chrono::high_resolution_clock::now();
+            auto now = Clock::now();
             auto nextAlarm = _alarms.top();
             _alarms.pop();
             auto timeToWait = nextAlarm.time - now;
@@ -39,7 +39,7 @@ namespace Pi
             {
                 std::this_thread::sleep_for(timeToWait);
             }
-            nextAlarm.func();
+            nextAlarm.alarm->fire();
         }
     }
 
@@ -47,6 +47,39 @@ namespace Pi
     void Loop::stop()
     {
         _running = false;
+    }
+
+
+    DutyCycle::DutyCycle(Loop& loop, std::chrono::milliseconds interval, DutyCycleHandler& handler)
+        : _loop(loop)
+        , _handler(&handler)
+        , _interval(interval)
+    {
+        _loop.set_alarm(interval, *this);
+    }
+
+
+    void DutyCycle::set_duty_cycle(float duty_cycle)
+    {
+        _duty_cycle = std::min(1.0f, std::max(0.0f, duty_cycle));
+    }
+
+
+    void DutyCycle::fire()
+    {
+        _isUp = !_isUp;
+        auto ms = _interval.count();
+        if (_isUp)
+        {
+            _handler->up();
+            ms *= _duty_cycle;
+        }
+        else
+        {
+            _handler->down();
+            ms *= (1-_duty_cycle);
+        }
+        _loop.set_alarm(std::chrono::milliseconds(ms), *this);
     }
 
 

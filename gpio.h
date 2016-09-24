@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "loop.h"
+
 
 namespace Pi
 {
@@ -33,7 +35,7 @@ namespace Pi
     class OutputPin
     {
     public:
-        OutputPin(PinNumber pin);
+        OutputPin(PinNumber);
 
         void set(bool value);
 
@@ -45,7 +47,7 @@ namespace Pi
     class InputPin
     {
     public:
-        InputPin(PinNumber pin);
+        InputPin(PinNumber);
 
         bool read();
 

@@ -18,33 +18,55 @@
 */
 
 #include "camjam3.h"
-#include "input.h"
+//#include "input.h"
 #include "wiimote.h"
 #include "loop.h"
+#include <iostream>
 
 #include <chrono>
 #include <thread>
 
 
-int main() {
-    using namespace std::literals;
-    Pi::Bot bot;
-    Input::Window window;
-    window.text("Press 1+2 on the wiimote");
-    Input::WiiMote wiimote;
-    Pi::Loop loop;
+using namespace std::literals;
 
-    std::function<void()> code = [&]()
+
+struct Program : public Pi::AlarmHandler
+{
+    Pi::Loop loop;
+    //Input::Window window;
+    std::unique_ptr<Input::WiiMote> wiimote;
+
+    Pi::Bot bot;
+
+    Program()
+        : bot(loop)
+    {}
+
+    void run()
+    {
+        std::cout << "Press 1+2 on the wiimote" << std::endl;
+        //window.text("Press 1+2 on the wiimote");
+        wiimote.reset(new Input::WiiMote);
+        std::cout << "OK" << std::endl;
+        //window.text("OK");
+
+        loop.set_alarm(10ms, *this);
+        loop.run();
+    }
+
+    void fire() override
     {
 //        auto event = window.getEvent();
-        auto event = wiimote.getEvent();
+        auto event = wiimote->getEvent();
         if (event.shutdown) loop.stop();
         bot.move(event.direction, event.speed);
-        loop.set_alarm(10ms, code);
-    };
-    loop.set_alarm(10ms, code);
+        loop.set_alarm(10ms, *this);
+    }
+};
 
-    loop.run();
 
+int main() {
+    Program program;
+    program.run();
 }
 

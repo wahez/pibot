@@ -20,40 +20,77 @@
 #pragma once
 
 #include <queue>
-#include <functional>
 #include <chrono>
+#include <tuple>
 
 
 namespace Pi
 {
 
 
+    struct AlarmHandler
+    {
+        AlarmHandler& operator=(const AlarmHandler&) = delete;
+        virtual void fire() = 0;
+    };
+
+
     class Loop
     {
     public:
+        using Clock = std::chrono::high_resolution_clock;
+        Loop() = default;
+        Loop(const Loop&) = delete;
+
         void run();
 
         void stop();
 
         template<typename Duration>
-        void set_alarm(Duration timeout, std::function<void()> func)
+        void set_alarm(Duration timeout, AlarmHandler& alarm)
         {
-            _alarms.push(Alarm{std::chrono::high_resolution_clock::now() + timeout, std::move(func)});
+            _alarms.push(Alarm{Clock::now() + timeout, &alarm});
         }
 
     private:
         struct Alarm
         {
-            std::chrono::high_resolution_clock::time_point time;
-            std::function<void()> func;
+            Clock::time_point time;
+            AlarmHandler* alarm;
 
             bool operator<(const Alarm& other) const
             {
-                return time < other.time;
+                return std::tie(time, alarm) > std::tie(other.time, other.alarm);
             }
         };
         bool _running = false;
         std::priority_queue<Alarm> _alarms;
+    };
+
+
+    struct DutyCycleHandler
+    {
+        DutyCycleHandler& operator=(const DutyCycleHandler&) = delete;
+        virtual void up() = 0;
+        virtual void down() = 0;
+    };
+
+
+    class DutyCycle: public AlarmHandler
+    {
+    public:
+        DutyCycle(Loop&, std::chrono::milliseconds, DutyCycleHandler&);
+
+        void set_duty_cycle(float); // between 0 and 1
+
+        void fire() override;
+
+    private:
+        Loop& _loop;
+        DutyCycleHandler* _handler;
+        std::chrono::milliseconds _interval;
+        float _duty_cycle = 0;
+        bool _isUp = false;
     };
 
 

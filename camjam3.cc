@@ -28,6 +28,9 @@ namespace Pi
 {
 
 
+    using namespace std::literals;
+
+
     namespace {
 
         template<size_t N>
@@ -45,8 +48,9 @@ namespace Pi
     }
 
 
-    Motor::Motor(PinNumber forwardPin, PinNumber reversePin)
-        : _forwardPin(forwardPin)
+    Motor::Motor(Loop& loop, PinNumber forwardPin, PinNumber reversePin)
+        : _dutyCycle(loop, 10ms, *this)
+        , _forwardPin(forwardPin)
         , _reversePin(reversePin)
     {
         stop();
@@ -55,12 +59,30 @@ namespace Pi
 
     void Motor::move(float direction)
     {
-        if (direction > 0.5)
+        _direction = direction;
+        if (_direction > 0)
+        {
+            _dutyCycle.set_duty_cycle(direction);
+        }
+        else if (_direction < 0)
+        {
+            _dutyCycle.set_duty_cycle(-direction);
+        }
+        else
+        {
+            _dutyCycle.set_duty_cycle(0);
+        }
+    }
+
+
+    void Motor::up()
+    {
+        if (_direction > 0.05)
         {
             _forwardPin.set(true);
             _reversePin.set(false);
         }
-        else if (direction < -0.5)
+        else if (_direction < -0.05)
         {
             _forwardPin.set(false);
             _reversePin.set(true);
@@ -70,6 +92,13 @@ namespace Pi
             _forwardPin.set(false);
             _reversePin.set(false);
         }
+    }
+
+
+    void Motor::down()
+    {
+        _forwardPin.set(false);
+        _reversePin.set(false);
     }
 
 
@@ -115,16 +144,16 @@ namespace Pi
     }
 
 
-    Bot::Bot()
-        : _left(8, 7)
-        , _right(9, 10)
+    Bot::Bot(Loop& loop)
+        : _left(loop, 8, 7)
+        , _right(loop, 9, 10)
         , _lineSensor(25)
     {}
 
 
     void Bot::move(float direction, float speed)
     {
-        if (speed < 0.1)
+        if (speed < 0.05)
         {
             _left.move(0);
             _right.move(0);

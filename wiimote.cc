@@ -107,7 +107,7 @@ namespace Input {
         if (state.ext_type == CWIID_EXT_NUNCHUK)
         {
 
-            result.shutdown = state.ext.nunchuk.buttons > 0;
+            //result.shutdown = state.ext.nunchuk.buttons > 0;
             float scaledX = state.ext.nunchuk.stick[CWIID_X] / 256.0 - 0.5;
             float scaledY = state.ext.nunchuk.stick[CWIID_Y] / 256.0 - 0.5;
             result.speed = 2.4*std::sqrt(scaledX*scaledX + scaledY*scaledY);

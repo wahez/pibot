@@ -26,10 +26,10 @@ namespace Pi
 {
 
 
-    class Motor
+    class Motor : public DutyCycleHandler
     {
     public:
-        Motor(PinNumber forwardPin, PinNumber reversePin);
+        Motor(Loop&, PinNumber forwardPin, PinNumber reversePin);
 
         void stop()    { move(0); }
         void forward() { move(1); }
@@ -37,8 +37,13 @@ namespace Pi
         void move(float direction);
 
     private:
+        DutyCycle _dutyCycle;
         OutputPin _forwardPin;
         OutputPin _reversePin;
+        float _direction = 0;
+
+        void up() override;
+        void down() override;
     };
 
 
@@ -70,7 +75,7 @@ namespace Pi
     class Bot
     {
     public:
-        Bot();
+        Bot(Loop&);
 
         void move(float direction, float speed);
 
@@ -78,6 +83,8 @@ namespace Pi
         Motor _left;
         Motor _right;
         LineSensor _lineSensor;
+
+        void update(bool);
     };
 
 
