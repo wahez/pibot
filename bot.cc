@@ -22,9 +22,8 @@
 #include "wiimote.h"
 #include "loop.h"
 #include <iostream>
-
+#include <cmath>
 #include <chrono>
-#include <thread>
 
 
 using namespace std::literals;
@@ -44,11 +43,30 @@ struct Program : public Pi::AlarmHandler
 
     void run()
     {
-        std::cout << "Press 1+2 on the wiimote" << std::endl;
-        //window.text("Press 1+2 on the wiimote");
-        wiimote.reset(new Input::WiiMote);
+        for (;;)
+        {
+            try
+            {
+                bot.move(0.5*M_PI, 1);
+                loop.run_for(100ms);
+                bot.move(1.5*M_PI, 1);
+                loop.run_for(100ms);
+                bot.move(0, 0);
+                loop.run_for(100ms);
+                std::cout << "Press 1+2 on the wiimote" << std::endl;
+                //window.text("Press 1+2 on the wiimote");
+                wiimote.reset(new Input::WiiMote());
+                break;
+            }
+            catch (const std::runtime_error& ex)
+            {
+                std::cout << ex.what() << std::endl;
+            }
+        }
         std::cout << "OK" << std::endl;
-        //window.text("OK");
+        wiimote->rumble(true);
+        loop.run_for(100ms);
+        wiimote->rumble(false);
 
         loop.set_alarm(10ms, *this);
         loop.run();

@@ -35,7 +35,7 @@ namespace Pi
     };
 
 
-    class Loop
+    class Loop : private AlarmHandler
     {
     public:
         using Clock = std::chrono::high_resolution_clock;
@@ -43,6 +43,12 @@ namespace Pi
         Loop(const Loop&) = delete;
 
         void run();
+        template<typename Duration>
+        void run_for(Duration timeout)
+        {
+            set_alarm(timeout, *this);
+            run();
+        }
 
         void stop();
 
@@ -53,6 +59,11 @@ namespace Pi
         }
 
     private:
+        void fire() override
+        {
+            stop();
+        }
+
         struct Alarm
         {
             Clock::time_point time;

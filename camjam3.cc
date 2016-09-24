@@ -77,12 +77,12 @@ namespace Pi
 
     void Motor::up()
     {
-        if (_direction > 0.05)
+        if (_direction > 0.01)
         {
             _forwardPin.set(true);
             _reversePin.set(false);
         }
-        else if (_direction < -0.05)
+        else if (_direction < -0.01)
         {
             _forwardPin.set(false);
             _reversePin.set(true);
@@ -153,7 +153,7 @@ namespace Pi
 
     void Bot::move(float direction, float speed)
     {
-        if (speed < 0.05)
+        if (speed < 0.1)
         {
             _left.move(0);
             _right.move(0);
