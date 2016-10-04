@@ -38,9 +38,20 @@ namespace Input {
     namespace {
 
 
+        std::exception_ptr error;
+
+
         void error_callback(cwiid_wiimote_t *wiimote, const char *s, va_list ap)
         {
-            throw std::runtime_error(s);
+            error = std::make_exception_ptr(std::runtime_error(s));
+        }
+
+
+        void checkError()
+        {
+            std::exception_ptr e;
+            std::swap(e, error);
+            if (e) std::rethrow_exception(e);
         }
 
 
@@ -53,6 +64,7 @@ namespace Input {
         cwiid_set_err(error_callback);
         bdaddr_t bdaddr_any{{0, 0, 0, 0, 0, 0}};
         _impl->wiimote = cwiid_open(&bdaddr_any, 0);
+        checkError();
         if (!_impl->wiimote)
             throw std::runtime_error("Cannot connect to wiimote");
 
@@ -60,12 +72,14 @@ namespace Input {
         {
             throw std::runtime_error("Cannot set nunchuk report mode");
         }
+        checkError();
     }
 
 
     WiiMote::~WiiMote()
     {
         cwiid_close(_impl->wiimote);
+        checkError();
     }
 
 
@@ -80,6 +94,7 @@ namespace Input {
         {
             throw std::runtime_error("Could not set led state");
         }
+        checkError();
     }
 
 
@@ -90,6 +105,7 @@ namespace Input {
         {
             throw std::runtime_error("Could not set rumble state");
         }
+        checkError();
     }
 
 
@@ -100,6 +116,7 @@ namespace Input {
         {
             throw std::runtime_error("Could not get wiimote state");
         }
+        checkError();
 
         Event result;
         result.direction = 0;
