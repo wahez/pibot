@@ -64,7 +64,10 @@ namespace Pi
     public:
         DistanceSensor(PinNumber trigger, PinNumber echo);
 
-        float distance();
+        // returns 0 for unsuccesful
+        // resolution is the resolution in meters
+        // result is also in meters
+        float distance(float resolution = 0.01/*m*/, float max_distance = 10/*m*/);
 
     private:
         OutputPin _trigger;

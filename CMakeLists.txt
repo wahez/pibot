@@ -43,6 +43,9 @@ target_link_libraries(pibot libpibot)
 
 enable_testing()
 
-add_executable(pibot_test tests.cc loop_test.cc)
+add_executable(pibot_test
+    tests.cc
+    camjam_test.cc
+    loop_test.cc)
 target_link_libraries(pibot_test libpibot)
 add_test(pibot_test pibot_test)

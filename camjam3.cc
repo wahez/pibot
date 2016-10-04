@@ -122,24 +122,31 @@ namespace Pi
     }
 
 
-    float DistanceSensor::distance()
+    float DistanceSensor::distance(float resolution, float max_distance)
     {
+        using FloatSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
+        constexpr float speed_of_sound = 343.260;
+        auto sleep_time = FloatSeconds(2 * resolution / speed_of_sound);
+        auto timeout = FloatSeconds(2 * max_distance / speed_of_sound);
+        auto wait_for = [&](auto&& pred)
+        {
+            auto start = std::chrono::high_resolution_clock::now();
+            auto end = start + timeout;
+            while (!pred() && start <= end)
+            {
+                std::this_thread::sleep_for(sleep_time);
+                start = std::chrono::high_resolution_clock::now();
+            }
+            return start;
+        };
         using namespace std::literals;
         _trigger.set(true);
         std::this_thread::sleep_for(10us);
-        auto start = std::chrono::high_resolution_clock::now();
         _trigger.set(false);
-
-        auto end = start + 40ms;
-        auto now = start;
-        while (!_echo.read())
-        {
-            now = std::chrono::high_resolution_clock::now();
-            if (now >= end) return 0;
-        }
-        using FloatSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
+        auto start = wait_for([this]() { return  this->_echo.read(); });
+        auto now   = wait_for([this]() { return !this->_echo.read(); });
         auto elapsed = FloatSeconds(now - start);
-        auto distance = elapsed.count() * 343.260 / 2;
+        auto distance = elapsed.count() * speed_of_sound / 2;
         return distance;
     }
 
