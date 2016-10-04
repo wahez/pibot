@@ -20,8 +20,7 @@ project(pibot++)
 
 add_definitions(-std=c++1y)
 
-add_executable(
-    pibot
+add_library(libpibot
     camjam3.h
     camjam3.cc
     event.h
@@ -31,9 +30,19 @@ add_executable(
     loop.cc
     wiimote.h
     wiimote.cc
-    bot.cc
     gpio.h
     gpio.cc
 )
 
-target_link_libraries(pibot wiringPi ncurses cwiid)
+add_executable(pibot
+    bot.cc
+)
+
+target_link_libraries(libpibot ncurses cwiid wiringPi)
+target_link_libraries(pibot libpibot)
+
+enable_testing()
+
+add_executable(pibot_test tests.cc loop_test.cc)
+target_link_libraries(pibot_test libpibot)
+add_test(pibot_test pibot_test)

@@ -94,14 +94,14 @@ namespace Pi
 
         void set_duty_cycle(float); // between 0 and 1
 
-        void fire() override;
-
     private:
         Loop& _loop;
         DutyCycleHandler* _handler;
         std::chrono::milliseconds _interval;
         float _duty_cycle = 0;
         bool _isUp = false;
+
+        void fire() override;
     };
 
 
