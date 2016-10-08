@@ -18,7 +18,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(pibot++)
 
-add_definitions(-std=c++1y)
+add_definitions(-std=c++1y -Wall)
 
 add_library(libpibot
     camjam3.h

@@ -114,41 +114,117 @@ namespace Pi
     }
 
 
-    DistanceSensor::DistanceSensor(PinNumber trigger, PinNumber echo)
-        : _trigger(trigger)
-        , _echo(echo)
+    struct StateMachine : public AlarmHandler
     {
-        _trigger.set(false);
-    }
+        using Timespan = std::chrono::microseconds;
+        static constexpr const Timespan _trigger_length = 10us;
+        static constexpr const Timespan _timeout = 100'000us;
+        static constexpr const Timespan _resolution = 1us;
+        static constexpr const Timespan _interval = 100us;
+        DistanceSensor& _sensor;
+        enum class Action { START_TRIGGER, END_TRIGGER, WAIT_FOR_HIGH, WAIT_FOR_LOW };
+        Action _next_action = Action::START_TRIGGER;
+        std::chrono::high_resolution_clock::time_point _start;
 
+        StateMachine(DistanceSensor& sensor) : _sensor(sensor) {}
 
-    float DistanceSensor::distance(float resolution, float max_distance)
-    {
-        using FloatSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
-        constexpr float speed_of_sound = 343.260;
-        auto sleep_time = FloatSeconds(2 * resolution / speed_of_sound);
-        auto timeout = FloatSeconds(2 * max_distance / speed_of_sound);
-        auto wait_for = [&](auto&& pred)
+        using Result = std::pair<Timespan, Action>;
+
+        Result start_trigger()
         {
-            auto start = std::chrono::high_resolution_clock::now();
-            auto end = start + timeout;
-            while (!pred() && start <= end)
+            _sensor._trigger.set(true);
+            return {_trigger_length, Action::END_TRIGGER};
+        }
+
+        Result wait_for_high()
+        {
+            auto now = std::chrono::high_resolution_clock::now();
+            if (now > _start + _timeout)
             {
-                std::this_thread::sleep_for(sleep_time);
-                start = std::chrono::high_resolution_clock::now();
+                return {_interval, Action::START_TRIGGER};
             }
-            return start;
-        };
-        using namespace std::literals;
-        _trigger.set(true);
-        std::this_thread::sleep_for(10us);
+            else if (!_sensor._echo.read())
+            {
+                return {_resolution, Action::WAIT_FOR_HIGH};
+            }
+            else
+            {
+                _start = now;
+                return {_resolution, Action::WAIT_FOR_LOW};
+            }
+        }
+
+        Result end_trigger()
+        {
+            _sensor._trigger.set(false);
+            _start = std::chrono::high_resolution_clock::now();
+            return wait_for_high();
+        }
+
+        Result wait_for_low()
+        {
+            auto now = std::chrono::high_resolution_clock::now();
+            if (now > _start + _timeout)
+            {
+                return {_interval, Action::START_TRIGGER};
+            }
+            else if (_sensor._echo.read())
+            {
+                return {_resolution, Action::WAIT_FOR_LOW};
+            }
+
+            using FloatSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
+            auto elapsed = FloatSeconds(now - _start);
+            auto distance = elapsed.count() * 343.260 / 2;
+            _sensor._handler.distance(_sensor, distance);
+            return {_interval, Action::START_TRIGGER};
+        }
+
+        Result exec_state()
+        {
+            using namespace std::literals;
+            switch (_next_action)
+            {
+            case Action::END_TRIGGER:
+                return end_trigger();
+                // fallthrough
+            case Action::WAIT_FOR_HIGH:
+                return wait_for_high();
+            case Action::WAIT_FOR_LOW:
+                return wait_for_low();
+            case Action::START_TRIGGER:
+                return start_trigger();
+            };
+            return start_trigger();
+        }
+
+        void fire() override
+        {
+            Result delay_action = exec_state();
+            _next_action = delay_action.second;
+            _sensor._loop.set_alarm(delay_action.first, *this);
+        }
+
+    };
+    constexpr const StateMachine::Timespan StateMachine::_trigger_length;
+    constexpr const StateMachine::Timespan StateMachine::_timeout;
+    constexpr const StateMachine::Timespan StateMachine::_resolution;
+    constexpr const StateMachine::Timespan StateMachine::_interval;
+
+
+    DistanceSensor::DistanceSensor(PinNumber trigger, PinNumber echo, Loop& loop, DistanceHandler& handler)
+        : _loop(loop)
+        , _handler(handler)
+        , _trigger(trigger)
+        , _echo(echo)
+        , _state(new StateMachine(*this))
+    {
         _trigger.set(false);
-        auto start = wait_for([this]() { return  this->_echo.read(); });
-        auto now   = wait_for([this]() { return !this->_echo.read(); });
-        auto elapsed = FloatSeconds(now - start);
-        auto distance = elapsed.count() * speed_of_sound / 2;
-        return distance;
+        _loop.set_alarm(0s, *_state);
     }
+
+
+    DistanceSensor::~DistanceSensor() {}
 
 
     Bot::Bot(Loop& loop)

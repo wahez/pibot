@@ -20,6 +20,9 @@
 #pragma once
 
 #include "gpio.h"
+#include "loop.h"
+
+#include <memory>
 
 
 namespace Pi
@@ -59,19 +62,25 @@ namespace Pi
     };
 
 
+    struct DistanceHandler
+    {
+        virtual void distance(class DistanceSensor&, float distance) = 0;
+    };
+
+
     class DistanceSensor
     {
     public:
-        DistanceSensor(PinNumber trigger, PinNumber echo);
-
-        // returns 0 for unsuccesful
-        // resolution is the resolution in meters
-        // result is also in meters
-        float distance(float resolution = 0.01/*m*/, float max_distance = 10/*m*/);
+        DistanceSensor(PinNumber trigger, PinNumber echo, Loop&, DistanceHandler&);
+        ~DistanceSensor();
 
     private:
+        friend class StateMachine;
+        Loop& _loop;
+        DistanceHandler& _handler;
         OutputPin _trigger;
         InputPin _echo;
+        std::unique_ptr<class StateMachine> _state;
     };
 
 

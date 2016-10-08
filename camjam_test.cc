@@ -62,16 +62,31 @@ namespace Pi { namespace testing
     }
 
 
+    struct MockDistanceHandler : public DistanceHandler
+    {
+        using Callback = std::function<void(float)>;
+        Callback callback;
+
+        MockDistanceHandler(Callback cb) : callback(std::move(cb)) {}
+
+        void distance(DistanceSensor&, float distance) override
+        {
+            callback(distance);
+        }
+    };
+
+
     TEST_CASE("DistanceSensor")
     {
         using namespace std::literals;
 
-        DistanceSensor ds(17, 18);
-        for (int j = 0; j < 10; ++j)
+        Loop loop;
+        MockDistanceHandler handler([](auto distance)
         {
-            std::cout << ds.distance(0.001) << std::endl;
-            std::this_thread::sleep_for(100ms);
-        }
+            std::cout << "distance: " << distance << std::endl;
+        });
+        DistanceSensor ds(17, 18, loop, handler);
+        loop.run_for(10s);
         CHECK(true);
     }
 
