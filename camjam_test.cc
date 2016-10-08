@@ -35,7 +35,7 @@ namespace Pi { namespace testing
         OutputPin trigger(17);
         InputPin echo(18);
         auto duration = 10us;
-        for (int j = 0; j < 1; ++j)
+        for (int j = 0; j < 10; ++j)
         {
             trigger.set(true);
             std::this_thread::sleep_for(duration);
@@ -56,7 +56,7 @@ namespace Pi { namespace testing
             auto elapsed = FloatSeconds(end - start);
             auto distance = elapsed.count() * 343.260 / 2;
             std::cout << (end-start).count() << " " << distance << std::endl;
-            std::this_thread::sleep_for(1s);
+            std::this_thread::sleep_for(100ms);
         }
         CHECK(true);
     }
@@ -67,10 +67,10 @@ namespace Pi { namespace testing
         using namespace std::literals;
 
         DistanceSensor ds(17, 18);
-        for (int j = 0; j < 100; ++j)
+        for (int j = 0; j < 10; ++j)
         {
             std::cout << ds.distance(0.001) << std::endl;
-            std::this_thread::sleep_for(1s);
+            std::this_thread::sleep_for(100ms);
         }
         CHECK(true);
     }
