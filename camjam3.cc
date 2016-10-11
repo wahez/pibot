@@ -18,7 +18,7 @@
 */
 
 #include "camjam3.h"
-
+#include <boost/variant.hpp>
 #include <thread>
 #include <chrono>
 #include <cmath>
@@ -114,102 +114,85 @@ namespace Pi
     }
 
 
-    struct StateMachine : public AlarmHandler
+    namespace {
+
+
+        using TimePoint = std::chrono::high_resolution_clock::time_point;
+        using Duration = std::chrono::high_resolution_clock::duration;
+        auto Now() { return std::chrono::high_resolution_clock::now(); }
+        struct Start {};
+        struct Triggering {};
+        struct WaitingForHigh { TimePoint started; };
+        struct WaitingForLow  { TimePoint started; };
+        using State = boost::variant<Start, Triggering, WaitingForHigh, WaitingForLow>;
+        using Result = std::pair<Duration, State>;
+
+        constexpr const Duration trigger_length = 10us;
+        constexpr const Duration timeout = 40us;
+
+
+    }
+
+
+    struct StateMachine : public AlarmHandler, public boost::static_visitor<Result>
     {
-        using Timespan = std::chrono::microseconds;
-        static constexpr const Timespan _trigger_length = 10us;
-        static constexpr const Timespan _timeout = 100'000us;
-        static constexpr const Timespan _resolution = 1us;
-        static constexpr const Timespan _interval = 100us;
         DistanceSensor& _sensor;
-        enum class Action { START_TRIGGER, END_TRIGGER, WAIT_FOR_HIGH, WAIT_FOR_LOW };
-        Action _next_action = Action::START_TRIGGER;
-        std::chrono::high_resolution_clock::time_point _start;
+        State _state = Start{};
 
         StateMachine(DistanceSensor& sensor) : _sensor(sensor) {}
 
-        using Result = std::pair<Timespan, Action>;
-
-        Result start_trigger()
+        Result operator()(Start)
         {
             _sensor._trigger.set(true);
-            return {_trigger_length, Action::END_TRIGGER};
+            return {trigger_length, Triggering()};
         }
-
-        Result wait_for_high()
+        Result operator()(Triggering)
+        {
+            _sensor._trigger.set(false);
+            return {_sensor._resolution, WaitingForHigh{ Now() }};
+        }
+        Result operator()(const WaitingForHigh& state)
         {
             auto now = std::chrono::high_resolution_clock::now();
-            if (now > _start + _timeout)
+            if (now > state.started + timeout)
             {
-                return {_interval, Action::START_TRIGGER};
+                return {_sensor._interval, Start()};
             }
             else if (!_sensor._echo.read())
             {
-                return {_resolution, Action::WAIT_FOR_HIGH};
+                return {_sensor._resolution, state};
             }
             else
             {
-                _start = now;
-                return {_resolution, Action::WAIT_FOR_LOW};
+                return {_sensor._resolution, WaitingForLow{ now }};
             }
         }
-
-        Result end_trigger()
-        {
-            _sensor._trigger.set(false);
-            _start = std::chrono::high_resolution_clock::now();
-            return wait_for_high();
-        }
-
-        Result wait_for_low()
+        Result operator()(const WaitingForLow& state)
         {
             auto now = std::chrono::high_resolution_clock::now();
-            if (now > _start + _timeout)
+            if (now > state.started + timeout)
             {
-                return {_interval, Action::START_TRIGGER};
+                return {_sensor._interval, Start()};
             }
             else if (_sensor._echo.read())
             {
-                return {_resolution, Action::WAIT_FOR_LOW};
+                return {_sensor._resolution, state};
             }
 
             using FloatSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
-            auto elapsed = FloatSeconds(now - _start);
-            auto distance = elapsed.count() * 343.260 / 2;
+            auto elapsed = FloatSeconds(now - state.started);
+            auto distance = elapsed.count() * DistanceSensor::SpeedOfSound / 2;
             _sensor._handler.distance(_sensor, distance);
-            return {_interval, Action::START_TRIGGER};
-        }
-
-        Result exec_state()
-        {
-            using namespace std::literals;
-            switch (_next_action)
-            {
-            case Action::END_TRIGGER:
-                return end_trigger();
-                // fallthrough
-            case Action::WAIT_FOR_HIGH:
-                return wait_for_high();
-            case Action::WAIT_FOR_LOW:
-                return wait_for_low();
-            case Action::START_TRIGGER:
-                return start_trigger();
-            };
-            return start_trigger();
+            return {_sensor._interval, Start()};
         }
 
         void fire() override
         {
-            Result delay_action = exec_state();
-            _next_action = delay_action.second;
-            _sensor._loop.set_alarm(delay_action.first, *this);
+            Result delay_state = boost::apply_visitor(*this, _state);
+            _state = delay_state.second;
+            _sensor._loop.set_alarm(delay_state.first, *this);
         }
-
     };
-    constexpr const StateMachine::Timespan StateMachine::_trigger_length;
-    constexpr const StateMachine::Timespan StateMachine::_timeout;
-    constexpr const StateMachine::Timespan StateMachine::_resolution;
-    constexpr const StateMachine::Timespan StateMachine::_interval;
 
 
     DistanceSensor::DistanceSensor(PinNumber trigger, PinNumber echo, Loop& loop, DistanceHandler& handler)

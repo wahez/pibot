@@ -74,12 +74,30 @@ namespace Pi
         DistanceSensor(PinNumber trigger, PinNumber echo, Loop&, DistanceHandler&);
         ~DistanceSensor();
 
+        void set_frequency(float Hz)
+        {
+            auto seconds = std::chrono::duration<float>(1/Hz);
+            _interval = std::chrono::duration_cast<Duration>(seconds);
+        }
+
+        void set_resolution(float meters)
+        {
+            auto resolution = std::chrono::duration<float>(2 * meters / SpeedOfSound);
+            _resolution = std::chrono::duration_cast<Duration>(resolution);
+        }
+
     private:
+        static const constexpr float SpeedOfSound = 343.260;
+        using Duration = std::chrono::high_resolution_clock::duration;
+
         friend class StateMachine;
         Loop& _loop;
         DistanceHandler& _handler;
         OutputPin _trigger;
         InputPin _echo;
+        Duration _interval;
+        Duration _resolution;
+
         std::unique_ptr<class StateMachine> _state;
     };
 
