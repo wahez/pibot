@@ -128,7 +128,6 @@ namespace Pi
         using Result = std::pair<Duration, State>;
 
         constexpr const Duration trigger_length = 10us;
-        constexpr const Duration timeout = 40us;
 
 
     }
@@ -154,7 +153,7 @@ namespace Pi
         Result operator()(const WaitingForHigh& state)
         {
             auto now = std::chrono::high_resolution_clock::now();
-            if (now > state.started + timeout)
+            if (now > state.started + _sensor._interval)
             {
                 return {_sensor._interval, Start()};
             }
@@ -170,7 +169,7 @@ namespace Pi
         Result operator()(const WaitingForLow& state)
         {
             auto now = std::chrono::high_resolution_clock::now();
-            if (now > state.started + timeout)
+            if (now > state.started + _sensor._interval)
             {
                 return {_sensor._interval, Start()};
             }
@@ -202,8 +201,10 @@ namespace Pi
         , _echo(echo)
         , _state(new StateMachine(*this))
     {
+        set_frequency(1);
+        set_resolution(0.002);
         _trigger.set(false);
-        _loop.set_alarm(0s, *_state);
+        _loop.set_alarm(_interval, *_state);
     }
 
 
