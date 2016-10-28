@@ -19,7 +19,9 @@
 
 #include "gpio.h"
 
+#ifndef NO_WIRINGPI
 #include <wiringPi.h>
+#endif
 
 
 namespace Pi
@@ -28,10 +30,12 @@ namespace Pi
 
     void Init()
     {
+#ifndef NO_WIRINGPI
         static bool initted = false;
         if (!initted)
             wiringPiSetupGpio();
         initted = true;
+#endif
     }
 
 
@@ -39,13 +43,17 @@ namespace Pi
         : _pin(pin)
     {
         Init();
+#ifndef NO_WIRINGPI
         pinMode(_pin, OUTPUT);
+#endif
     }
 
 
     void OutputPin::set(bool value)
     {
+#ifndef NO_WIRINGPI
         digitalWrite(_pin, value ? HIGH : LOW);
+#endif
     }
 
 
@@ -53,13 +61,19 @@ namespace Pi
         : _pin(pin)
     {
         Init();
+#ifndef NO_WIRINGPI
         pinMode(_pin, INPUT);
+#endif
     }
 
 
     bool InputPin::read()
     {
+#ifndef NO_WIRINGPI
         return digitalRead(_pin) == HIGH;
+#else
+        return false;
+#endif
     }
 
 

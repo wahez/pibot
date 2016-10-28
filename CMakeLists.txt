@@ -38,7 +38,13 @@ add_executable(pibot
     bot.cc
 )
 
-target_link_libraries(libpibot ncurses cwiid wiringPi)
+target_link_libraries(libpibot ncurses cwiid)
+if (NO_WIRINGPI)
+    add_definitions(-DNO_WIRINGPI=1)
+else()
+    target_link_libraries(libpibot wiringPi)
+endif()
+
 target_link_libraries(pibot libpibot)
 
 enable_testing()
