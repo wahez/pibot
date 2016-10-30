@@ -42,9 +42,36 @@ struct Hardware
 };
 
 
-struct Program : public Pi::AlarmHandler
+struct SimpleMode : public Pi::AlarmHandler
+{
+    Hardware& hardware;
+    SimpleMode(Hardware& hw)
+        : hardware(hw)
+    {}
+
+    void activate()
+    {
+        hardware.loop.set_alarm(10ms, *this);
+    }
+
+    void fire() override
+    {
+        auto event = hardware.wiimote->getEvent();
+        if (event.shutdown) hardware.loop.stop();
+        hardware.bot.move(event.direction, event.speed);
+        hardware.loop.set_alarm(10ms, *this);
+    }
+};
+
+
+struct Program
 {
     Hardware hardware;
+    SimpleMode simpleMode;
+
+    Program()
+        : simpleMode(hardware)
+    {}
 
     void run()
     {
@@ -73,18 +100,10 @@ struct Program : public Pi::AlarmHandler
         hardware.loop.run_for(100ms);
         hardware.wiimote->rumble(false);
 
-        hardware.loop.set_alarm(10ms, *this);
+        simpleMode.activate();
         hardware.loop.run();
     }
 
-    void fire() override
-    {
-//        auto event = window.getEvent();
-        auto event = hardware.wiimote->getEvent();
-        if (event.shutdown) hardware.loop.stop();
-        hardware.bot.move(event.direction, event.speed);
-        hardware.loop.set_alarm(10ms, *this);
-    }
 };
 
 
