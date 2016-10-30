@@ -29,17 +29,22 @@
 using namespace std::literals;
 
 
-struct Program : public Pi::AlarmHandler
+struct Hardware
 {
     Pi::Loop loop;
-    //Input::Window window;
     std::unique_ptr<Input::WiiMote> wiimote;
-
     Pi::Bot bot;
 
-    Program()
-        : bot(loop)
+    Hardware()
+        : loop()
+        , bot(loop)
     {}
+};
+
+
+struct Program : public Pi::AlarmHandler
+{
+    Hardware hardware;
 
     void run()
     {
@@ -47,15 +52,15 @@ struct Program : public Pi::AlarmHandler
         {
             try
             {
-                bot.move(0.5*M_PI, 1);
-                loop.run_for(100ms);
-                bot.move(1.5*M_PI, 1);
-                loop.run_for(100ms);
-                bot.move(0, 0);
-                loop.run_for(100ms);
+                hardware.bot.move(0.5*M_PI, 1);
+                hardware.loop.run_for(100ms);
+                hardware.bot.move(1.5*M_PI, 1);
+                hardware.loop.run_for(100ms);
+                hardware.bot.move(0, 0);
+                hardware.loop.run_for(100ms);
                 std::cout << "Press 1+2 on the wiimote" << std::endl;
                 //window.text("Press 1+2 on the wiimote");
-                wiimote.reset(new Input::WiiMote());
+                hardware.wiimote.reset(new Input::WiiMote());
                 break;
             }
             catch (const std::runtime_error& ex)
@@ -64,21 +69,21 @@ struct Program : public Pi::AlarmHandler
             }
         }
         std::cout << "OK" << std::endl;
-        wiimote->rumble(true);
-        loop.run_for(100ms);
-        wiimote->rumble(false);
+        hardware.wiimote->rumble(true);
+        hardware.loop.run_for(100ms);
+        hardware.wiimote->rumble(false);
 
-        loop.set_alarm(10ms, *this);
-        loop.run();
+        hardware.loop.set_alarm(10ms, *this);
+        hardware.loop.run();
     }
 
     void fire() override
     {
 //        auto event = window.getEvent();
-        auto event = wiimote->getEvent();
-        if (event.shutdown) loop.stop();
-        bot.move(event.direction, event.speed);
-        loop.set_alarm(10ms, *this);
+        auto event = hardware.wiimote->getEvent();
+        if (event.shutdown) hardware.loop.stop();
+        hardware.bot.move(event.direction, event.speed);
+        hardware.loop.set_alarm(10ms, *this);
     }
 };
 
