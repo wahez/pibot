@@ -31,34 +31,50 @@ using namespace std::literals;
 struct Hardware
 {
     Pi::Loop loop;
-    std::unique_ptr<Input::WiiMote> wiimote;
     Pi::Bot bot;
+    std::unique_ptr<Input::WiiMote> wiimote;
+
+    using EventPoller = Pi::PolledEvent<Input::Event>;
+    std::unique_ptr<EventPoller> event_poller;
 
     Hardware()
         : loop()
         , bot(loop)
     {}
+
+    void set_wiimote(std::unique_ptr<Input::WiiMote> wm)
+    {
+        wiimote = std::move(wm);
+        if (!event_poller)
+        {
+            event_poller = std::make_unique<EventPoller>(loop, 10ms, [this]() { return this->wiimote->getEvent(); });
+        }
+    }
 };
 
 
-struct SimpleMode : public Pi::AlarmHandler
+struct SimpleMode
 {
     Hardware& hardware;
+    Hardware::EventPoller::Tag tag;
+
     SimpleMode(Hardware& hw)
         : hardware(hw)
     {}
 
-    void activate()
+    ~SimpleMode()
     {
-        hardware.loop.set_alarm(10ms, *this);
+        hardware.event_poller->unsubscribe(tag);
     }
 
-    void fire() override
+    void activate()
     {
-        auto event = hardware.wiimote->getEvent();
-        if (event.shutdown) hardware.loop.stop();
-        hardware.bot.move(event.direction, event.speed);
-        hardware.loop.set_alarm(10ms, *this);
+        hardware.event_poller->set_interval(10ms);
+        tag = hardware.event_poller->subscribe([this](const Input::Event& event)
+        {
+            if (event.shutdown) this->hardware.loop.stop();
+            this->hardware.bot.move(event.direction, event.speed);
+        });
     }
 };
 
@@ -86,7 +102,8 @@ struct Program
                 hardware.loop.run_for(100ms);
                 std::cout << "Press 1+2 on the wiimote" << std::endl;
                 //window.text("Press 1+2 on the wiimote");
-                hardware.wiimote.reset(new Input::WiiMote());
+                auto wiimote = std::make_unique<Input::WiiMote>();
+                hardware.set_wiimote(std::move(wiimote));
                 break;
             }
             catch (const std::runtime_error& ex)
