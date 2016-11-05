@@ -53,40 +53,39 @@ struct Hardware
 };
 
 
-struct SimpleMode
+struct Mode
+{
+    virtual ~Mode() {}
+};
+
+
+struct SimpleMode : Mode
 {
     Hardware& hardware;
     Hardware::EventPoller::Tag tag;
 
     SimpleMode(Hardware& hw)
         : hardware(hw)
-    {}
+    {
+        hardware.event_poller->set_interval(10ms);
+        tag = hardware.event_poller->subscribe([this](const Input::Event& event)
+        {
+            this->hardware.bot.move(event.direction, event.speed);
+        });
+    }
 
     ~SimpleMode()
     {
         hardware.event_poller->unsubscribe(tag);
     }
 
-    void activate()
-    {
-        hardware.event_poller->set_interval(10ms);
-        tag = hardware.event_poller->subscribe([this](const Input::Event& event)
-        {
-            if (event.shutdown) this->hardware.loop.stop();
-            this->hardware.bot.move(event.direction, event.speed);
-        });
-    }
 };
 
 
 struct Program
 {
     Hardware hardware;
-    SimpleMode simpleMode;
-
-    Program()
-        : simpleMode(hardware)
-    {}
+    std::unique_ptr<Mode> mode;
 
     void run()
     {
@@ -116,10 +115,13 @@ struct Program
         hardware.loop.run_for(100ms);
         hardware.wiimote->rumble(false);
 
-        simpleMode.activate();
+        mode = std::make_unique<SimpleMode>(hardware);
+        hardware.event_poller->subscribe([this](const Input::Event& event)
+        {
+            if (event.shutdown) this->hardware.loop.stop();
+        });
         hardware.loop.run();
     }
-
 };
 
 
