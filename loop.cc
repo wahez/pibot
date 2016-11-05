@@ -50,6 +50,22 @@ namespace Pi
     }
 
 
+    void Loop::remove_alarm(AlarmHandler& alarm)
+    {
+        decltype(_alarms) newAlarms;
+        while (!_alarms.empty())
+        {
+            const auto& nextAlarm = _alarms.top();
+            if (nextAlarm.alarm != &alarm)
+            {
+                newAlarms.push(std::move(nextAlarm));
+            }
+            _alarms.pop();
+        }
+        _alarms = newAlarms;
+    }
+
+
     DutyCycle::DutyCycle(Loop& loop, std::chrono::milliseconds interval, DutyCycleHandler& handler)
         : _loop(loop)
         , _handler(&handler)

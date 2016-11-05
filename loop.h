@@ -43,6 +43,7 @@ namespace Pi
         Loop(const Loop&) = delete;
 
         void run();
+
         template<typename Duration>
         void run_for(Duration timeout)
         {
@@ -57,6 +58,8 @@ namespace Pi
         {
             _alarms.push(Alarm{Clock::now() + timeout, &alarm});
         }
+
+        void remove_alarm(AlarmHandler&);
 
     private:
         void fire() override
