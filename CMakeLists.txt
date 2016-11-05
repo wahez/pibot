@@ -28,6 +28,8 @@ add_library(libpibot
     input.cc
     loop.h
     loop.cc
+    loop_utils.h
+    loop_utils.cc
     wiimote.h
     wiimote.cc
     gpio.h
@@ -52,6 +54,9 @@ enable_testing()
 add_executable(pibot_test
     tests.cc
     camjam_test.cc
-    loop_test.cc)
+    loop_test.cc
+    loop_utils_test.cc
+    mocks.h
+)
 target_link_libraries(pibot_test libpibot)
 add_test(pibot_test pibot_test)

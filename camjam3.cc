@@ -49,7 +49,7 @@ namespace Pi
 
 
     Motor::Motor(Loop& loop, PinNumber forwardPin, PinNumber reversePin)
-        : _dutyCycle(loop, 10ms, *this)
+        : _dutyCycle(loop, 10ms, [this](bool up) { if (up) this->on(); else this->off(); })
         , _forwardPin(forwardPin)
         , _reversePin(reversePin)
     {
@@ -75,7 +75,7 @@ namespace Pi
     }
 
 
-    void Motor::up()
+    void Motor::on()
     {
         if (_direction > 0.01)
         {
@@ -95,7 +95,7 @@ namespace Pi
     }
 
 
-    void Motor::down()
+    void Motor::off()
     {
         _forwardPin.set(false);
         _reversePin.set(false);

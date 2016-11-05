@@ -18,6 +18,7 @@
 */
 
 #include "loop.h"
+#include "mocks.h"
 #include "doctest.h"
 
 #include <functional>
@@ -30,13 +31,6 @@ namespace Pi { namespace testing
 
     using namespace std::literals;
 
-
-    struct MockAlarmHandler : public AlarmHandler
-    {
-        MockAlarmHandler(std::function<void()> f) : func(f) {}
-        std::function<void()> func;
-        void fire() override { func(); }
-    };
 
     TEST_CASE("Loop::run empty returns")
     {
@@ -82,73 +76,16 @@ namespace Pi { namespace testing
     }
 
 
-    struct MockDutyCycleHandler : public DutyCycleHandler
-    {
-        MockDutyCycleHandler(std::function<void(bool)> f) : func(f) {}
-        std::function<void(bool)> func;
-        void up() override { func(true); }
-        void down() override { func(false); }
-    };
-
-    TEST_CASE("DutyCycle::duty_cycle")
+    TEST_CASE("Loop::remove_alarm")
     {
         Loop loop;
-        int up_calls = 0;
-        int down_calls = 0;
-        std::chrono::high_resolution_clock::duration up_time(0);
-        std::chrono::high_resolution_clock::duration down_time(0);
-        auto lastState = false;
-        auto last = std::chrono::high_resolution_clock::now();
-        MockDutyCycleHandler handler([&](bool state)
-        {
-            CHECK(state != lastState);
-            lastState = state;
-            auto now = std::chrono::high_resolution_clock::now();
-            if (state)
-            {
-                ++up_calls;
-                down_time += now - last;
-            }
-            else
-            {
-                ++down_calls;
-                up_time += now - last;
-            }
-            last = now;
-        });
-        MockAlarmHandler stopper([&]() { loop.stop(); });
-        loop.set_alarm(100ms, stopper);
-        DutyCycle dc(loop, 10ms, handler);
-        SUBCASE("0")
-        {
-            dc.set_duty_cycle(0);
-            loop.run();
-
-            CHECK(up_calls == 9);
-            CHECK(down_calls == 9);
-            CHECK(up_time.count()/1'000'000 == 0);
-            CHECK(down_time.count()/1'000'000 == 90);
-        }
-        SUBCASE("0.50")
-        {
-            dc.set_duty_cycle(0.5);
-            loop.run();
-
-            CHECK(up_calls == 9);
-            CHECK(down_calls == 9);
-            CHECK(up_time.count()/1'000'000 == 45);
-            CHECK(down_time.count()/1'000'000 == 50);
-        }
-        SUBCASE("1")
-        {
-            dc.set_duty_cycle(1);
-            loop.run();
-
-            CHECK(up_calls == 9);
-            CHECK(down_calls == 8);
-            CHECK(up_time.count()/1'000'000 == 80);
-            CHECK(down_time.count()/1'000'000 == 10);
-        }
+        int slowCalled = 0;
+        MockAlarmHandler slowAlarm{ [&](){ ++slowCalled; }};
+        MockAlarmHandler fastAlarm{ [&](){ loop.remove_alarm(slowAlarm); }};
+        loop.set_alarm(30ms, slowAlarm);
+        loop.set_alarm(10ms, fastAlarm);
+        loop.run();
+        CHECK(slowCalled == 0);
     }
 
 

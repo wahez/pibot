@@ -21,6 +21,7 @@
 
 #include "gpio.h"
 #include "loop.h"
+#include "loop_utils.h"
 
 #include <memory>
 
@@ -29,7 +30,7 @@ namespace Pi
 {
 
 
-    class Motor : public DutyCycleHandler
+    class Motor
     {
     public:
         Motor(Loop&, PinNumber forwardPin, PinNumber reversePin);
@@ -39,14 +40,14 @@ namespace Pi
         void reverse() { move(-1); }
         void move(float direction);
 
+        void on();
+        void off();
+
     private:
         DutyCycle _dutyCycle;
         OutputPin _forwardPin;
         OutputPin _reversePin;
         float _direction = 0;
-
-        void up() override;
-        void down() override;
     };
 
 

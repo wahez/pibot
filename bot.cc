@@ -18,7 +18,6 @@
 */
 
 #include "camjam3.h"
-//#include "input.h"
 #include "wiimote.h"
 #include "loop.h"
 #include <iostream>

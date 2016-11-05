@@ -82,30 +82,4 @@ namespace Pi
     };
 
 
-    struct DutyCycleHandler
-    {
-        DutyCycleHandler& operator=(const DutyCycleHandler&) = delete;
-        virtual void up() = 0;
-        virtual void down() = 0;
-    };
-
-
-    class DutyCycle: public AlarmHandler
-    {
-    public:
-        DutyCycle(Loop&, std::chrono::milliseconds, DutyCycleHandler&);
-
-        void set_duty_cycle(float); // between 0 and 1
-
-    private:
-        Loop& _loop;
-        DutyCycleHandler* _handler;
-        std::chrono::milliseconds _interval;
-        float _duty_cycle = 0;
-        bool _isUp = false;
-
-        void fire() override;
-    };
-
-
 }
