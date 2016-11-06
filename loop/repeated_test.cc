@@ -18,7 +18,7 @@
 */
 
 #include "repeated.h"
-#include "doctest.h"
+#include "../doctest/doctest.h"
 
 
 namespace Loop { namespace testing

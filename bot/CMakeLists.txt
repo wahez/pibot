@@ -15,26 +15,19 @@
 #    You should have received a copy of the GNU General Public License
 #    along with pibot++. If not, see <http://www.gnu.org/licenses/>.
 
-add_library(loop
-    duty_cycle.h
-    duty_cycle.cc
-    loop.h
-    loop.cc
-    polled_event.h
-    repeated.h
-    repeated.cc
-    subscription_list.h
+
+add_library(bot
+    event.h
+    input.h
+    input.cc
+    wiimote.h
+    wiimote.cc
 )
 
-target_include_directories(loop INTERFACE ..)
-
-add_executable(loop_test
-    ../doctest/tests.cc
-    duty_cycle_test.cc
-    loop_test.cc
-    mocks.h
-    polled_event_test.cc
-    repeated_test.cc
+add_executable(pibot
+    bot.cc
 )
-target_link_libraries(loop_test loop)
-add_test(loop_test loop_test)
+
+target_link_libraries(bot ncurses cwiid loop camjam3)
+
+target_link_libraries(pibot bot)

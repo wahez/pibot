@@ -19,7 +19,7 @@
 
 #include "loop.h"
 #include "mocks.h"
-#include "doctest.h"
+#include "../doctest/doctest.h"
 
 #include <functional>
 #include <iostream>

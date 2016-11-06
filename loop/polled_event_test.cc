@@ -18,7 +18,7 @@
 */
 
 #include "polled_event.h"
-#include "doctest.h"
+#include "../doctest/doctest.h"
 
 
 namespace Loop { namespace testing

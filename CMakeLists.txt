@@ -20,29 +20,8 @@ project(pibot++)
 
 add_definitions(-std=c++1y -Wall)
 
-add_subdirectory(loop)
-add_subdirectory(camjam3)
-
-add_library(libpibot
-    event.h
-    input.h
-    input.cc
-    wiimote.h
-    wiimote.cc
-)
-
-add_executable(pibot
-    bot.cc
-)
-
-target_link_libraries(libpibot ncurses cwiid loop camjam3)
-
-target_link_libraries(pibot libpibot)
-
 enable_testing()
 
-add_executable(pibot_test
-    tests.cc
-)
-target_link_libraries(pibot_test libpibot)
-add_test(pibot_test pibot_test)
+add_subdirectory(loop)
+add_subdirectory(camjam3)
+add_subdirectory(bot)

@@ -36,10 +36,8 @@ else()
     target_link_libraries(camjam3 wiringPi)
 endif()
 
-enable_testing()
-
 add_executable(camjam3_test
-    tests.cc
+    ../doctest/tests.cc
     distance_sensor_test.cc
 )
 target_link_libraries(camjam3_test camjam3)

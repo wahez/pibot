@@ -18,7 +18,7 @@
 */
 
 #include "distance_sensor.h"
-#include "doctest.h"
+#include "../doctest/doctest.h"
 #include <iostream>
 #include <thread>
 
