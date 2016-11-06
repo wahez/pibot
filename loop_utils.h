@@ -20,8 +20,7 @@
 #pragma once
 
 #include "loop.h"
-#include <map>
-#include <functional>
+#include "subscription_list.h"
 
 
 namespace Pi
@@ -60,43 +59,25 @@ namespace Pi
 
 
     template<typename Data>
-    class PolledEvent : public RepeatedBase
+    class PolledEvent : public RepeatedBase, public SubscriptionList<Data>
     {
     public:
-        using Tag = std::uint64_t;
+        using Tag = typename SubscriptionList<Data>::Tag;
         using Getter = std::function<Data()>;
-        using Callback = std::function<void(const Data&)>;
+        using Callback = typename SubscriptionList<Data>::Callback;
 
         PolledEvent(Loop& loop, Duration duration, Getter data_getter)
             : RepeatedBase(loop, duration)
             , _data_getter(std::move(data_getter))
         {}
 
-        Tag subscribe(Callback callback)
-        {
-            _subscribers[_next_tag] = std::move(callback);
-            return _next_tag++;
-        }
-
-        void unsubscribe(Tag tag)
-        {
-            // TODO handle unsubscribe during iteration;
-            _subscribers.erase(tag);
-        }
-
     private:
         void repeat() override
         {
-            Data data = _data_getter();
-            for (const auto& tag_callback: _subscribers)
-            {
-                tag_callback.second(data);
-            }
+            this->notify(_data_getter());
         }
 
         Getter _data_getter;
-        std::map<Tag, Callback> _subscribers;
-        Tag _next_tag = 0;
     };
 
 

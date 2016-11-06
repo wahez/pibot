@@ -24,16 +24,17 @@ add_library(libpibot
     camjam3.h
     camjam3.cc
     event.h
+    gpio.h
+    gpio.cc
     input.h
     input.cc
     loop.h
     loop.cc
     loop_utils.h
     loop_utils.cc
+    subscription_list.h
     wiimote.h
     wiimote.cc
-    gpio.h
-    gpio.cc
 )
 
 add_executable(pibot

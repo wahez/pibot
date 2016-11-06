@@ -138,7 +138,16 @@ namespace Pi
         DistanceSensor& _sensor;
         State _state = Start{};
 
-        StateMachine(DistanceSensor& sensor) : _sensor(sensor) {}
+        StateMachine(DistanceSensor& sensor)
+            : _sensor(sensor)
+        {
+            _sensor._loop.set_alarm(_sensor._interval, *this);
+        }
+
+        ~StateMachine()
+        {
+            _sensor._loop.remove_alarm(*this);
+        }
 
         Result operator()(Start)
         {
@@ -181,7 +190,7 @@ namespace Pi
             using FloatSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
             auto elapsed = FloatSeconds(now - state.started);
             auto distance = elapsed.count() * DistanceSensor::SpeedOfSound / 2;
-            _sensor._handler.distance(_sensor, distance);
+            _sensor.notify(_sensor, distance);
             return {_sensor._interval, Start()};
         }
 
@@ -194,27 +203,39 @@ namespace Pi
     };
 
 
-    DistanceSensor::DistanceSensor(PinNumber trigger, PinNumber echo, Loop& loop, DistanceHandler& handler)
+    DistanceSensor::DistanceSensor(PinNumber trigger, PinNumber echo, Loop& loop)
         : _loop(loop)
-        , _handler(handler)
         , _trigger(trigger)
         , _echo(echo)
         , _state(new StateMachine(*this))
     {
         set_frequency(1);
         set_resolution(0.002);
-        _trigger.set(false);
-        _loop.set_alarm(_interval, *_state);
     }
 
 
     DistanceSensor::~DistanceSensor() {}
 
 
+    void DistanceSensor::set_frequency(float Hz)
+    {
+        auto seconds = std::chrono::duration<float>(1/Hz);
+        _interval = std::chrono::duration_cast<Duration>(seconds);
+    }
+
+
+    void DistanceSensor::set_resolution(float meters)
+    {
+        auto resolution = std::chrono::duration<float>(2 * meters / SpeedOfSound);
+        _resolution = std::chrono::duration_cast<Duration>(resolution);
+    }
+
+
     Bot::Bot(Loop& loop)
         : _left(loop, 8, 7)
         , _right(loop, 9, 10)
-        , _lineSensor(25)
+        , _line_sensor(25)
+        , _distance_sensor(17, 18, loop)
     {}
 
 

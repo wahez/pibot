@@ -62,23 +62,29 @@ struct Mode
 struct SimpleMode : Mode
 {
     Hardware& hardware;
-    Hardware::EventPoller::Tag tag;
+    Hardware::EventPoller::Tag pollerTag;
+    Pi::DistanceSensor::Tag distanceTag;
 
     SimpleMode(Hardware& hw)
         : hardware(hw)
     {
         hardware.event_poller->set_interval(10ms);
-        tag = hardware.event_poller->subscribe([this](const Input::Event& event)
+        pollerTag = hardware.event_poller->subscribe([this](const Input::Event& event)
         {
             this->hardware.bot.move(event.direction, event.speed);
+        });
+        distanceTag = hardware.bot.get_distance_sensor().subscribe([this](auto&&, float distance)
+        {
+            hardware.wiimote->rumble(distance < 0.10);
         });
     }
 
     ~SimpleMode()
     {
-        hardware.event_poller->unsubscribe(tag);
+        hardware.bot.get_distance_sensor().unsubscribe(distanceTag);
+        hardware.wiimote->rumble(false);
+        hardware.event_poller->unsubscribe(pollerTag);
     }
-
 };
 
 

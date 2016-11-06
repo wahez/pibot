@@ -22,6 +22,7 @@
 #include "gpio.h"
 #include "loop.h"
 #include "loop_utils.h"
+#include "subscription_list.h"
 
 #include <memory>
 
@@ -63,29 +64,14 @@ namespace Pi
     };
 
 
-    struct DistanceHandler
-    {
-        virtual void distance(class DistanceSensor&, float distance) = 0;
-    };
-
-
-    class DistanceSensor
+    class DistanceSensor : public SubscriptionList<DistanceSensor&, float>
     {
     public:
-        DistanceSensor(PinNumber trigger, PinNumber echo, Loop&, DistanceHandler&);
+        DistanceSensor(PinNumber trigger, PinNumber echo, Loop&);
         ~DistanceSensor();
 
-        void set_frequency(float Hz)
-        {
-            auto seconds = std::chrono::duration<float>(1/Hz);
-            _interval = std::chrono::duration_cast<Duration>(seconds);
-        }
-
-        void set_resolution(float meters)
-        {
-            auto resolution = std::chrono::duration<float>(2 * meters / SpeedOfSound);
-            _resolution = std::chrono::duration_cast<Duration>(resolution);
-        }
+        void set_frequency(float Hz);
+        void set_resolution(float meters);
 
     private:
         static const constexpr float SpeedOfSound = 343.260;
@@ -93,12 +79,10 @@ namespace Pi
 
         friend class StateMachine;
         Loop& _loop;
-        DistanceHandler& _handler;
         OutputPin _trigger;
         InputPin _echo;
         Duration _interval;
         Duration _resolution;
-
         std::unique_ptr<class StateMachine> _state;
     };
 
@@ -110,10 +94,13 @@ namespace Pi
 
         void move(float direction, float speed);
 
+        DistanceSensor& get_distance_sensor() { return _distance_sensor; }
+
     private:
         Motor _left;
         Motor _right;
-        LineSensor _lineSensor;
+        LineSensor _line_sensor;
+        DistanceSensor _distance_sensor;
 
         void update(bool);
     };
