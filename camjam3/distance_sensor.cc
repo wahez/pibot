@@ -124,19 +124,12 @@ namespace CamJam3
         , _echo(echo)
         , _state(new StateMachine(*this))
     {
-        set_frequency(1);
+        set_interval(1s);
         set_resolution(0.002);
     }
 
 
     DistanceSensor::~DistanceSensor() {}
-
-
-    void DistanceSensor::set_frequency(float Hz)
-    {
-        auto seconds = std::chrono::duration<float>(1/Hz);
-        _interval = std::chrono::duration_cast<Duration>(seconds);
-    }
 
 
     void DistanceSensor::set_resolution(float meters)

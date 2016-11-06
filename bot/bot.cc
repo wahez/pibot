@@ -74,7 +74,10 @@ struct SimpleMode : Mode
         {
             this->hardware.bot.move(event.direction, event.speed);
         });
-        distanceTag = hardware.bot.get_distance_sensor().subscribe([this](auto&&, float distance)
+        auto& distance = hardware.bot.get_distance_sensor();
+        distance.set_interval(1s);
+        distance.set_resolution(0.002);
+        distanceTag = distance.subscribe([this](auto&&, float distance)
         {
             hardware.wiimote->rumble(distance < 0.10);
         });

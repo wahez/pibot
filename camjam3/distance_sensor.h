@@ -32,15 +32,16 @@ namespace CamJam3
     class DistanceSensor : public Loop::SubscriptionList<DistanceSensor&, float>
     {
     public:
+        using Duration = std::chrono::high_resolution_clock::duration;
+
         DistanceSensor(Pi::PinNumber trigger, Pi::PinNumber echo, Loop::Loop&);
         ~DistanceSensor();
 
-        void set_frequency(float Hz);
+        void set_interval(Duration interval) { _interval = interval; }
         void set_resolution(float meters);
 
     private:
         static const constexpr float SpeedOfSound = 343.260;
-        using Duration = std::chrono::high_resolution_clock::duration;
 
         friend class StateMachine;
         Loop::Loop& _loop;
