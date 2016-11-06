@@ -7,8 +7,10 @@ EXEC=${BIN_DIR}/bot
 while true; do
     sudo ${EXEC}
     cd ${SRC_DIR}
+    git stash
+    git fetch server
     git checkout production
-    git pull
+    git reset --hard server/production
     cd ${BIN_DIR}
     make
 done
