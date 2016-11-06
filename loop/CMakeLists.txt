@@ -15,43 +15,28 @@
 #    You should have received a copy of the GNU General Public License
 #    along with pibot++. If not, see <http://www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 3.0)
-project(pibot++)
-
-add_definitions(-std=c++1y -Wall)
-
-add_subdirectory(loop)
-
-add_library(libpibot
-    camjam3.h
-    camjam3.cc
-    event.h
-    gpio.h
-    gpio.cc
-    input.h
-    input.cc
-    wiimote.h
-    wiimote.cc
+add_library(loop
+    duty_cycle.h
+    duty_cycle.cc
+    loop.h
+    loop.cc
+    polled_event.h
+    repeated.h
+    repeated.cc
+    subscription_list.h
 )
 
-add_executable(pibot
-    bot.cc
-)
-
-target_link_libraries(libpibot ncurses cwiid loop)
-if (NO_WIRINGPI)
-    add_definitions(-DNO_WIRINGPI=1)
-else()
-    target_link_libraries(libpibot wiringPi)
-endif()
-
-target_link_libraries(pibot libpibot)
+target_include_directories(loop INTERFACE ..)
 
 enable_testing()
 
-add_executable(pibot_test
+add_executable(loop_test
     tests.cc
-    camjam_test.cc
+    duty_cycle_test.cc
+    loop_test.cc
+    mocks.h
+    polled_event_test.cc
+    repeated_test.cc
 )
-target_link_libraries(pibot_test libpibot)
-add_test(pibot_test pibot_test)
+target_link_libraries(loop_test loop)
+add_test(loop_test loop_test)

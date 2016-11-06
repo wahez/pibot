@@ -66,7 +66,7 @@ namespace Pi { namespace testing
     {
         using namespace std::literals;
 
-        Loop loop;
+        Loop::Loop loop;
         DistanceSensor ds(17, 18, loop);
         ds.subscribe([](auto&&, auto distance)
         {

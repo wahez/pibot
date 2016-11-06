@@ -17,20 +17,5 @@
     along with pibot++. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "loop.h"
-#include <functional>
-
-
-namespace Pi { namespace testing
-{
-
-
-    struct MockAlarmHandler : public AlarmHandler
-    {
-        MockAlarmHandler(std::function<void()> f) : func(f) {}
-        std::function<void()> func;
-        void fire() override { func(); }
-    };
-
-
-}}
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "doctest.h"

@@ -19,40 +19,30 @@
 
 #pragma once
 
-#include <loop/loop.h>
+#include "loop.h"
+#include <functional>
 
 
-namespace Pi
+namespace Loop
 {
 
 
-    using PinNumber = int;
-
-
-    void Init();
-
-
-    class OutputPin
+    class DutyCycle: public AlarmHandler
     {
     public:
-        OutputPin(PinNumber);
+        using Handler = std::function<void(bool up)>;
+        DutyCycle(Loop&, std::chrono::milliseconds, Handler);
 
-        void set(bool value);
-
-    private:
-        PinNumber _pin;
-    };
-
-
-    class InputPin
-    {
-    public:
-        InputPin(PinNumber);
-
-        bool read();
+        void set_duty_cycle(float); // between 0 and 1
 
     private:
-        PinNumber _pin;
+        Loop& _loop;
+        Handler _handler;
+        std::chrono::milliseconds _interval;
+        float _duty_cycle = 0;
+        bool _isUp = false;
+
+        void fire() override;
     };
 
 

@@ -19,40 +19,35 @@
 
 #pragma once
 
-#include <loop/loop.h>
+#include "loop.h"
+#include "subscription_list.h"
+#include "repeated.h"
 
 
-namespace Pi
+namespace Loop
 {
 
 
-    using PinNumber = int;
-
-
-    void Init();
-
-
-    class OutputPin
+    template<typename Data>
+    class PolledEvent : public RepeatedBase, public SubscriptionList<Data>
     {
     public:
-        OutputPin(PinNumber);
+        using Tag = typename SubscriptionList<Data>::Tag;
+        using Getter = std::function<Data()>;
+        using Callback = typename SubscriptionList<Data>::Callback;
 
-        void set(bool value);
-
-    private:
-        PinNumber _pin;
-    };
-
-
-    class InputPin
-    {
-    public:
-        InputPin(PinNumber);
-
-        bool read();
+        PolledEvent(Loop& loop, Duration duration, Getter data_getter)
+            : RepeatedBase(loop, duration)
+            , _data_getter(std::move(data_getter))
+        {}
 
     private:
-        PinNumber _pin;
+        void repeat() override
+        {
+            this->notify(_data_getter());
+        }
+
+        Getter _data_getter;
     };
 
 

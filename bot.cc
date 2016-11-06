@@ -19,7 +19,8 @@
 
 #include "camjam3.h"
 #include "wiimote.h"
-#include "loop.h"
+#include <loop/loop.h>
+#include <loop/polled_event.h>
 #include <iostream>
 #include <cmath>
 #include <chrono>
@@ -30,11 +31,11 @@ using namespace std::literals;
 
 struct Hardware
 {
-    Pi::Loop loop;
+    Loop::Loop loop;
     Pi::Bot bot;
     std::unique_ptr<Input::WiiMote> wiimote;
 
-    using EventPoller = Pi::PolledEvent<Input::Event>;
+    using EventPoller = Loop::PolledEvent<Input::Event>;
     std::unique_ptr<EventPoller> event_poller;
 
     Hardware()

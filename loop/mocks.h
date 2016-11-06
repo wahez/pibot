@@ -17,43 +17,20 @@
     along with pibot++. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "loop.h"
+#include <functional>
 
-#include <loop/loop.h>
 
-
-namespace Pi
+namespace Loop { namespace testing
 {
 
 
-    using PinNumber = int;
-
-
-    void Init();
-
-
-    class OutputPin
+    struct MockAlarmHandler : public AlarmHandler
     {
-    public:
-        OutputPin(PinNumber);
-
-        void set(bool value);
-
-    private:
-        PinNumber _pin;
+        MockAlarmHandler(std::function<void()> f) : func(f) {}
+        std::function<void()> func;
+        void fire() override { func(); }
     };
 
 
-    class InputPin
-    {
-    public:
-        InputPin(PinNumber);
-
-        bool read();
-
-    private:
-        PinNumber _pin;
-    };
-
-
-}
+}}

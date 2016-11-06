@@ -20,9 +20,9 @@
 #pragma once
 
 #include "gpio.h"
-#include "loop.h"
-#include "loop_utils.h"
-#include "subscription_list.h"
+#include <loop/loop.h>
+#include <loop/duty_cycle.h>
+#include <loop/subscription_list.h>
 
 #include <memory>
 
@@ -34,7 +34,7 @@ namespace Pi
     class Motor
     {
     public:
-        Motor(Loop&, PinNumber forwardPin, PinNumber reversePin);
+        Motor(Loop::Loop&, PinNumber forwardPin, PinNumber reversePin);
 
         void stop()    { move(0); }
         void forward() { move(1); }
@@ -45,7 +45,7 @@ namespace Pi
         void off();
 
     private:
-        DutyCycle _dutyCycle;
+        Loop::DutyCycle _dutyCycle;
         OutputPin _forwardPin;
         OutputPin _reversePin;
         float _direction = 0;
@@ -64,10 +64,10 @@ namespace Pi
     };
 
 
-    class DistanceSensor : public SubscriptionList<DistanceSensor&, float>
+    class DistanceSensor : public Loop::SubscriptionList<DistanceSensor&, float>
     {
     public:
-        DistanceSensor(PinNumber trigger, PinNumber echo, Loop&);
+        DistanceSensor(PinNumber trigger, PinNumber echo, Loop::Loop&);
         ~DistanceSensor();
 
         void set_frequency(float Hz);
@@ -78,7 +78,7 @@ namespace Pi
         using Duration = std::chrono::high_resolution_clock::duration;
 
         friend class StateMachine;
-        Loop& _loop;
+        Loop::Loop& _loop;
         OutputPin _trigger;
         InputPin _echo;
         Duration _interval;
@@ -90,7 +90,7 @@ namespace Pi
     class Bot
     {
     public:
-        Bot(Loop&);
+        Bot(Loop::Loop&);
 
         void move(float direction, float speed);
 

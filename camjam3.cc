@@ -48,7 +48,7 @@ namespace Pi
     }
 
 
-    Motor::Motor(Loop& loop, PinNumber forwardPin, PinNumber reversePin)
+    Motor::Motor(Loop::Loop& loop, PinNumber forwardPin, PinNumber reversePin)
         : _dutyCycle(loop, 10ms, [this](bool up) { if (up) this->on(); else this->off(); })
         , _forwardPin(forwardPin)
         , _reversePin(reversePin)
@@ -133,7 +133,7 @@ namespace Pi
     }
 
 
-    struct StateMachine : public AlarmHandler, public boost::static_visitor<Result>
+    struct StateMachine : public Loop::AlarmHandler, public boost::static_visitor<Result>
     {
         DistanceSensor& _sensor;
         State _state = Start{};
@@ -203,7 +203,7 @@ namespace Pi
     };
 
 
-    DistanceSensor::DistanceSensor(PinNumber trigger, PinNumber echo, Loop& loop)
+    DistanceSensor::DistanceSensor(PinNumber trigger, PinNumber echo, Loop::Loop& loop)
         : _loop(loop)
         , _trigger(trigger)
         , _echo(echo)
@@ -231,7 +231,7 @@ namespace Pi
     }
 
 
-    Bot::Bot(Loop& loop)
+    Bot::Bot(Loop::Loop& loop)
         : _left(loop, 8, 7)
         , _right(loop, 9, 10)
         , _line_sensor(25)

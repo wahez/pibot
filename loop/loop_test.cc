@@ -25,7 +25,7 @@
 #include <iostream>
 
 
-namespace Pi { namespace testing
+namespace Loop { namespace testing
 {
 
 

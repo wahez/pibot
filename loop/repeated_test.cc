@@ -17,43 +17,35 @@
     along with pibot++. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "repeated.h"
+#include "doctest.h"
 
-#include <loop/loop.h>
 
-
-namespace Pi
+namespace Loop { namespace testing
 {
 
 
-    using PinNumber = int;
+    using namespace std::literals;
 
 
-    void Init();
-
-
-    class OutputPin
+    TEST_CASE("Repeated")
     {
-    public:
-        OutputPin(PinNumber);
-
-        void set(bool value);
-
-    private:
-        PinNumber _pin;
-    };
+        Loop loop;
+        int count = 0;
+        Repeated repeated(loop, 10ms, [&]() { ++count; });
+        loop.run_for(35ms);
+        CHECK(count == 3);
+    }
 
 
-    class InputPin
+    TEST_CASE("Repeated::set_interval")
     {
-    public:
-        InputPin(PinNumber);
-
-        bool read();
-
-    private:
-        PinNumber _pin;
-    };
+        Loop loop;
+        int count = 0;
+        Repeated repeated(loop, 10ms, [&]() { repeated.set_interval(20ms); ++count; });
+        loop.run_for(35ms);
+        CHECK(count == 2);
+    }
 
 
-}
+}}

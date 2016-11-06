@@ -17,44 +17,11 @@
     along with pibot++. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "loop_utils.h"
+#include "repeated.h"
 
 
-namespace Pi
+namespace Loop
 {
-
-
-    DutyCycle::DutyCycle(Loop& loop, std::chrono::milliseconds interval, Handler handler)
-        : _loop(loop)
-        , _handler(std::move(handler))
-        , _interval(interval)
-    {
-        _loop.set_alarm(interval, *this);
-    }
-
-
-    void DutyCycle::set_duty_cycle(float duty_cycle)
-    {
-        _duty_cycle = std::min(1.0f, std::max(0.0f, duty_cycle));
-    }
-
-
-    void DutyCycle::fire()
-    {
-        _isUp = !_isUp;
-        auto ms = _interval.count();
-        if (_isUp)
-        {
-            _handler(true);
-            ms *= _duty_cycle;
-        }
-        else
-        {
-            _handler(false);
-            ms *= (1-_duty_cycle);
-        }
-        _loop.set_alarm(std::chrono::milliseconds(ms), *this);
-    }
 
 
     RepeatedBase::RepeatedBase(Loop& loop, Duration duration)

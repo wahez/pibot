@@ -20,10 +20,10 @@
 #pragma once
 
 #include "loop.h"
-#include "subscription_list.h"
+#include <functional>
 
 
-namespace Pi
+namespace Loop
 {
 
 
@@ -55,48 +55,6 @@ namespace Pi
     private:
         Handler _handler;
         void repeat() override;
-    };
-
-
-    template<typename Data>
-    class PolledEvent : public RepeatedBase, public SubscriptionList<Data>
-    {
-    public:
-        using Tag = typename SubscriptionList<Data>::Tag;
-        using Getter = std::function<Data()>;
-        using Callback = typename SubscriptionList<Data>::Callback;
-
-        PolledEvent(Loop& loop, Duration duration, Getter data_getter)
-            : RepeatedBase(loop, duration)
-            , _data_getter(std::move(data_getter))
-        {}
-
-    private:
-        void repeat() override
-        {
-            this->notify(_data_getter());
-        }
-
-        Getter _data_getter;
-    };
-
-
-    class DutyCycle: public AlarmHandler
-    {
-    public:
-        using Handler = std::function<void(bool up)>;
-        DutyCycle(Loop&, std::chrono::milliseconds, Handler);
-
-        void set_duty_cycle(float); // between 0 and 1
-
-    private:
-        Loop& _loop;
-        Handler _handler;
-        std::chrono::milliseconds _interval;
-        float _duty_cycle = 0;
-        bool _isUp = false;
-
-        void fire() override;
     };
 
 

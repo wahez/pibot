@@ -17,16 +17,12 @@
     along with pibot++. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "loop.h"
 #include "mocks.h"
-#include "loop_utils.h"
+#include "duty_cycle.h"
 #include "doctest.h"
 
-#include <functional>
-#include <iostream>
 
-
-namespace Pi { namespace testing
+namespace Loop { namespace testing
 {
 
 
@@ -95,6 +91,7 @@ namespace Pi { namespace testing
     }
 
 
+<<<<<<< 79344827916e17859c29a271ae2d8c39b24ad47a:loop_utils_test.cc
     TEST_CASE("Repeated")
     {
         Loop loop;
@@ -159,4 +156,6 @@ namespace Pi { namespace testing
     }
 
 
+=======
+>>>>>>> Cleaned up loop library:loop/duty_cycle_test.cc
 }}
