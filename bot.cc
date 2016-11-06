@@ -17,8 +17,8 @@
     along with pibot++. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "camjam3.h"
 #include "wiimote.h"
+#include <camjam3/bot.h>
 #include <loop/loop.h>
 #include <loop/polled_event.h>
 #include <iostream>
@@ -32,7 +32,7 @@ using namespace std::literals;
 struct Hardware
 {
     Loop::Loop loop;
-    Pi::Bot bot;
+    CamJam3::Bot bot;
     std::unique_ptr<Input::WiiMote> wiimote;
 
     using EventPoller = Loop::PolledEvent<Input::Event>;
@@ -64,7 +64,7 @@ struct SimpleMode : Mode
 {
     Hardware& hardware;
     Hardware::EventPoller::Tag pollerTag;
-    Pi::DistanceSensor::Tag distanceTag;
+    CamJam3::DistanceSensor::Tag distanceTag;
 
     SimpleMode(Hardware& hw)
         : hardware(hw)

@@ -17,101 +17,16 @@
     along with pibot++. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "camjam3.h"
+#include "distance_sensor.h"
 #include <boost/variant.hpp>
-#include <thread>
 #include <chrono>
-#include <cmath>
 
 
-namespace Pi
+namespace CamJam3
 {
 
 
     using namespace std::literals;
-
-
-    namespace {
-
-        template<size_t N>
-        auto interpolate(const float(&container)[N], float x)
-        {
-            x -= std::floor(x);
-            x *= N-1;
-            size_t index = std::floor(x);
-            auto fraction = x - index;
-            return
-                container[index] * (1-fraction) +
-                container[index+1] * fraction;
-        }
-
-    }
-
-
-    Motor::Motor(Loop::Loop& loop, PinNumber forwardPin, PinNumber reversePin)
-        : _dutyCycle(loop, 10ms, [this](bool up) { if (up) this->on(); else this->off(); })
-        , _forwardPin(forwardPin)
-        , _reversePin(reversePin)
-    {
-        stop();
-    }
-
-
-    void Motor::move(float direction)
-    {
-        _direction = direction;
-        if (_direction > 0)
-        {
-            _dutyCycle.set_duty_cycle(direction);
-        }
-        else if (_direction < 0)
-        {
-            _dutyCycle.set_duty_cycle(-direction);
-        }
-        else
-        {
-            _dutyCycle.set_duty_cycle(0);
-        }
-    }
-
-
-    void Motor::on()
-    {
-        if (_direction > 0.01)
-        {
-            _forwardPin.set(true);
-            _reversePin.set(false);
-        }
-        else if (_direction < -0.01)
-        {
-            _forwardPin.set(false);
-            _reversePin.set(true);
-        }
-        else
-        {
-            _forwardPin.set(false);
-            _reversePin.set(false);
-        }
-    }
-
-
-    void Motor::off()
-    {
-        _forwardPin.set(false);
-        _reversePin.set(false);
-    }
-
-
-    LineSensor::LineSensor(PinNumber pin)
-        : _pin(pin)
-    {
-    }
-
-
-    bool LineSensor::IsOnLine()
-    {
-        return _pin.read();
-    }
 
 
     namespace {
@@ -203,7 +118,7 @@ namespace Pi
     };
 
 
-    DistanceSensor::DistanceSensor(PinNumber trigger, PinNumber echo, Loop::Loop& loop)
+    DistanceSensor::DistanceSensor(Pi::PinNumber trigger, Pi::PinNumber echo, Loop::Loop& loop)
         : _loop(loop)
         , _trigger(trigger)
         , _echo(echo)
@@ -228,32 +143,6 @@ namespace Pi
     {
         auto resolution = std::chrono::duration<float>(2 * meters / SpeedOfSound);
         _resolution = std::chrono::duration_cast<Duration>(resolution);
-    }
-
-
-    Bot::Bot(Loop::Loop& loop)
-        : _left(loop, 8, 7)
-        , _right(loop, 9, 10)
-        , _line_sensor(25)
-        , _distance_sensor(17, 18, loop)
-    {}
-
-
-    void Bot::move(float direction, float speed)
-    {
-        if (speed < 0.1)
-        {
-            _left.move(0);
-            _right.move(0);
-        }
-        else
-        {
-            constexpr const float directionToMotorSpeed[] = {1, 0, -1, -1, -1, 0, 1, 1, 1};
-            float rm = interpolate(directionToMotorSpeed, direction / (2*M_PI));
-            float lm = interpolate(directionToMotorSpeed, 1-(direction / (2*M_PI)));
-            _left.move(lm*speed);
-            _right.move(rm*speed);
-        }
     }
 
 

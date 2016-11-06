@@ -21,53 +21,18 @@
 
 #include "gpio.h"
 #include <loop/loop.h>
-#include <loop/duty_cycle.h>
 #include <loop/subscription_list.h>
-
 #include <memory>
 
 
-namespace Pi
+namespace CamJam3
 {
-
-
-    class Motor
-    {
-    public:
-        Motor(Loop::Loop&, PinNumber forwardPin, PinNumber reversePin);
-
-        void stop()    { move(0); }
-        void forward() { move(1); }
-        void reverse() { move(-1); }
-        void move(float direction);
-
-        void on();
-        void off();
-
-    private:
-        Loop::DutyCycle _dutyCycle;
-        OutputPin _forwardPin;
-        OutputPin _reversePin;
-        float _direction = 0;
-    };
-
-
-    class LineSensor
-    {
-    public:
-        LineSensor(PinNumber);
-
-        bool IsOnLine();
-
-    private:
-        InputPin _pin;
-    };
 
 
     class DistanceSensor : public Loop::SubscriptionList<DistanceSensor&, float>
     {
     public:
-        DistanceSensor(PinNumber trigger, PinNumber echo, Loop::Loop&);
+        DistanceSensor(Pi::PinNumber trigger, Pi::PinNumber echo, Loop::Loop&);
         ~DistanceSensor();
 
         void set_frequency(float Hz);
@@ -79,30 +44,11 @@ namespace Pi
 
         friend class StateMachine;
         Loop::Loop& _loop;
-        OutputPin _trigger;
-        InputPin _echo;
+        Pi::OutputPin _trigger;
+        Pi::InputPin _echo;
         Duration _interval;
         Duration _resolution;
         std::unique_ptr<class StateMachine> _state;
-    };
-
-
-    class Bot
-    {
-    public:
-        Bot(Loop::Loop&);
-
-        void move(float direction, float speed);
-
-        DistanceSensor& get_distance_sensor() { return _distance_sensor; }
-
-    private:
-        Motor _left;
-        Motor _right;
-        LineSensor _line_sensor;
-        DistanceSensor _distance_sensor;
-
-        void update(bool);
     };
 
 

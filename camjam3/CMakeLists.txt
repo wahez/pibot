@@ -15,34 +15,32 @@
 #    You should have received a copy of the GNU General Public License
 #    along with pibot++. If not, see <http://www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 3.0)
-project(pibot++)
-
-add_definitions(-std=c++1y -Wall)
-
-add_subdirectory(loop)
-add_subdirectory(camjam3)
-
-add_library(libpibot
-    event.h
-    input.h
-    input.cc
-    wiimote.h
-    wiimote.cc
-)
-
-add_executable(pibot
+add_library(camjam3
+    bot.h
     bot.cc
+    distance_sensor.h
+    distance_sensor.cc
+    gpio.h
+    gpio.cc
+    line_sensor.h
+    line_sensor.cc
+    motor.h
+    motor.cc
 )
 
-target_link_libraries(libpibot ncurses cwiid loop camjam3)
-
-target_link_libraries(pibot libpibot)
+target_include_directories(camjam3 INTERFACE ..)
+target_link_libraries(camjam3 loop)
+if (NO_WIRINGPI)
+    add_definitions(-DNO_WIRINGPI=1)
+else()
+    target_link_libraries(camjam3 wiringPi)
+endif()
 
 enable_testing()
 
-add_executable(pibot_test
+add_executable(camjam3_test
     tests.cc
+    distance_sensor_test.cc
 )
-target_link_libraries(pibot_test libpibot)
-add_test(pibot_test pibot_test)
+target_link_libraries(camjam3_test camjam3)
+add_test(camjam3_test camjam3_test)

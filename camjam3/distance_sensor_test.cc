@@ -17,14 +17,13 @@
     along with pibot++. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "camjam3.h"
+#include "distance_sensor.h"
 #include "doctest.h"
-
 #include <iostream>
 #include <thread>
 
 
-namespace Pi { namespace testing
+namespace CamJam3 { namespace testing
 {
 
 
@@ -32,8 +31,8 @@ namespace Pi { namespace testing
     {
         using namespace std::literals;
 
-        OutputPin trigger(17);
-        InputPin echo(18);
+        Pi::OutputPin trigger(17);
+        Pi::InputPin echo(18);
         auto duration = 10us;
         for (int j = 0; j < 10; ++j)
         {
