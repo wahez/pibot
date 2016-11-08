@@ -54,14 +54,10 @@ namespace CamJam3
         State _state = Start{};
 
         StateMachine(DistanceSensor& sensor)
-            : _sensor(sensor)
+            : AlarmHandler(sensor._loop)
+            , _sensor(sensor)
         {
             _sensor._loop.set_alarm(_sensor._interval, *this);
-        }
-
-        ~StateMachine()
-        {
-            _sensor._loop.remove_alarm(*this);
         }
 
         Result operator()(Start)

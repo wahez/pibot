@@ -33,14 +33,12 @@ namespace Loop
         using Duration = std::chrono::high_resolution_clock::duration;
 
         RepeatedBase(Loop&, Duration);
-        ~RepeatedBase();
 
         virtual void repeat() = 0;
 
         void set_interval(Duration duration) { _duration = duration; }
 
     private:
-        Loop& _loop;
         Duration _duration;
         void fire() override;
     };

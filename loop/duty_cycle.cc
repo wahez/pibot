@@ -25,7 +25,7 @@ namespace Loop
 
 
     DutyCycle::DutyCycle(Loop& loop, std::chrono::milliseconds interval, Handler handler)
-        : _loop(loop)
+        : AlarmHandler(loop)
         , _handler(std::move(handler))
         , _interval(interval)
     {

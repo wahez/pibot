@@ -25,16 +25,10 @@ namespace Loop
 
 
     RepeatedBase::RepeatedBase(Loop& loop, Duration duration)
-        : _loop(loop)
+        : AlarmHandler(loop)
         , _duration(duration)
     {
         _loop.set_alarm(_duration, *this);
-    }
-
-
-    RepeatedBase::~RepeatedBase()
-    {
-        _loop.remove_alarm(*this);
     }
 
 

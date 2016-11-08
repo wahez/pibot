@@ -28,10 +28,18 @@ namespace Loop
 {
 
 
+    class Loop;
+
+
     struct AlarmHandler
     {
+        AlarmHandler(Loop& loop) : _loop(loop) {}
+        ~AlarmHandler();
         AlarmHandler& operator=(const AlarmHandler&) = delete;
         virtual void fire() = 0;
+
+    protected:
+        Loop& _loop;
     };
 
 
@@ -39,7 +47,7 @@ namespace Loop
     {
     public:
         using Clock = std::chrono::high_resolution_clock;
-        Loop() = default;
+        Loop();
         Loop(const Loop&) = delete;
 
         void run();

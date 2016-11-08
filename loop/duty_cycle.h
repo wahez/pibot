@@ -36,7 +36,6 @@ namespace Loop
         void set_duty_cycle(float); // between 0 and 1
 
     private:
-        Loop& _loop;
         Handler _handler;
         std::chrono::milliseconds _interval;
         float _duty_cycle = 0;

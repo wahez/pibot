@@ -26,6 +26,17 @@ namespace Loop
 {
 
 
+    AlarmHandler::~AlarmHandler()
+    {
+        _loop.remove_alarm(*this);
+    }
+
+
+    Loop::Loop()
+        : AlarmHandler(*this)
+    {}
+
+
     void Loop::run()
     {
         _running = true;

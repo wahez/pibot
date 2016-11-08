@@ -33,11 +33,12 @@ namespace Loop { namespace testing
 
     struct MockAlarmHandler : public AlarmHandler
     {
-        MockAlarmHandler(std::function<void()> f) : func(f) {}
+        MockAlarmHandler(Loop& loop, std::function<void()> f)
+            : AlarmHandler(loop)
+            , func(f) {}
         std::function<void()> func;
         void fire() override { func(); }
     };
-
 
 
     TEST_CASE("Loop::run empty returns")
@@ -51,7 +52,7 @@ namespace Loop { namespace testing
     {
         Loop loop;
         int called = 0;
-        MockAlarmHandler alarm{ [&](){ ++called; }};
+        MockAlarmHandler alarm{loop, [&](){ ++called; }};
         loop.set_alarm(10ms, alarm);
         loop.run();
         CHECK(called == 1);
@@ -62,8 +63,8 @@ namespace Loop { namespace testing
         Loop loop;
         int fastCalled = 0;
         int slowCalled = 0;
-        MockAlarmHandler fastAlarm{ [&](){ ++fastCalled; }};
-        MockAlarmHandler slowAlarm{ [&](){ ++slowCalled; }};
+        MockAlarmHandler fastAlarm{loop, [&](){ ++fastCalled; }};
+        MockAlarmHandler slowAlarm{loop, [&](){ ++slowCalled; }};
         loop.set_alarm(30ms, slowAlarm);
         loop.set_alarm(10ms, fastAlarm);
         loop.run_for(20ms);
@@ -75,8 +76,8 @@ namespace Loop { namespace testing
     {
         Loop loop;
         int slowCalled = 0;
-        MockAlarmHandler fastAlarm{ [&](){ loop.stop(); }};
-        MockAlarmHandler slowAlarm{ [&](){ ++slowCalled; }};
+        MockAlarmHandler fastAlarm{loop, [&](){ loop.stop(); }};
+        MockAlarmHandler slowAlarm{loop, [&](){ ++slowCalled; }};
         loop.set_alarm(30ms, slowAlarm);
         loop.set_alarm(10ms, fastAlarm);
         loop.run();
@@ -88,8 +89,8 @@ namespace Loop { namespace testing
     {
         Loop loop;
         int slowCalled = 0;
-        MockAlarmHandler slowAlarm{ [&](){ ++slowCalled; }};
-        MockAlarmHandler fastAlarm{ [&](){ loop.remove_alarm(slowAlarm); }};
+        MockAlarmHandler slowAlarm{loop, [&](){ ++slowCalled; }};
+        MockAlarmHandler fastAlarm{loop, [&](){ loop.remove_alarm(slowAlarm); }};
         loop.set_alarm(30ms, slowAlarm);
         loop.set_alarm(10ms, fastAlarm);
         loop.run();
