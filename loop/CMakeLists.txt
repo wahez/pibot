@@ -16,6 +16,8 @@
 #    along with pibot++. If not, see <http://www.gnu.org/licenses/>.
 
 add_library(loop
+    alarm.h
+    alarm.cc
     duty_cycle.h
     duty_cycle.cc
     loop.h
