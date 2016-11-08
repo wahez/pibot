@@ -34,7 +34,7 @@ namespace Loop { namespace testing
         int eventCount = 0;
         PolledEvent<int> poller(loop, 10ms, [&](){ return ++eventCount; });
         int handlerCount = 0;
-        poller.subscribe([&](int c) { CHECK(++handlerCount == c); });
+        poller.subscribe([&](int c) { CHECK(++handlerCount == c); }).release();
         loop.run_for(100ms);
         CHECK(handlerCount == eventCount);
         CHECK(eventCount != 0);
@@ -47,9 +47,9 @@ namespace Loop { namespace testing
         int eventCount = 0;
         PolledEvent<int> poller(loop, 10ms, [&](){ return ++eventCount; });
         int handlerCount1 = 0;
-        poller.subscribe([&](int c) { CHECK(++handlerCount1 == c); });
+        poller.subscribe([&](int c) { CHECK(++handlerCount1 == c); }).release();
         int handlerCount2 = 0;
-        poller.subscribe([&](int c) { CHECK(++handlerCount2 == c); });
+        poller.subscribe([&](int c) { CHECK(++handlerCount2 == c); }).release();
         loop.run_for(100ms);
         CHECK(eventCount != 0);
         CHECK(handlerCount1 == eventCount);
@@ -63,9 +63,10 @@ namespace Loop { namespace testing
         int eventCount = 0;
         PolledEvent<int> poller(loop, 10ms, [&](){ return ++eventCount; });
         int handlerCount1 = 0;
-        int tag = poller.subscribe([&](int c) { CHECK(++handlerCount1 == c); if (c > 5) poller.unsubscribe(tag); });
+        PolledEvent<int>::Subscription subscription;
+        subscription = poller.subscribe([&](int c) { CHECK(++handlerCount1 == c); if (c > 5) subscription.reset(); });
         int handlerCount2 = 0;
-        poller.subscribe([&](int c) { CHECK(++handlerCount2 == c); });
+        poller.subscribe([&](int c) { CHECK(++handlerCount2 == c); }).release();
         loop.run_for(100ms);
         CHECK(eventCount != 0);
         CHECK(handlerCount1 == 6);

@@ -23,6 +23,7 @@
 #include <set>
 #include <vector>
 #include <functional>
+#include <memory>
 
 
 namespace Loop
@@ -35,22 +36,20 @@ namespace Loop
     public:
         using Tag = std::uint64_t;
         using Callback = std::function<void(Args...)>;
+        using SubscriptionData = std::pair<Tag, SubscriptionList&>;
+        struct Deleter
+        {
+            void operator()(SubscriptionData* data) const { data->second.unsubscribe(data->first); }
+        };
+        using Subscription = std::unique_ptr<SubscriptionData, Deleter>;
 
-        Tag subscribe(Callback callback)
+        Subscription subscribe(Callback callback)
         {
             if (_iterating)
                 _added_subscribers.push_back(std::make_pair(_next_tag, std::move(callback)));
             else
                 _subscribers[_next_tag] = std::move(callback);
-            return _next_tag++;
-        }
-
-        void unsubscribe(Tag tag)
-        {
-            if (_iterating)
-                _deletedTags.insert(tag);
-            else
-                _subscribers.erase(tag);
+            return Subscription(new SubscriptionData{_next_tag++, *this});
         }
 
         template<typename... ARGS>
@@ -75,6 +74,14 @@ namespace Loop
         }
 
     private:
+        void unsubscribe(Tag tag)
+        {
+            if (_iterating)
+                _deletedTags.insert(tag);
+            else
+                _subscribers.erase(tag);
+        }
+
         std::map<Tag, Callback> _subscribers;
         std::set<Tag> _deletedTags;
         std::vector<std::pair<Tag, Callback>> _added_subscribers;

@@ -70,7 +70,7 @@ namespace CamJam3 { namespace testing
         ds.subscribe([](auto&&, auto distance)
         {
             std::cout << "distance: " << distance << std::endl;
-        });
+        }).release();
         loop.run_for(10s);
         CHECK(true);
     }

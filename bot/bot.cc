@@ -63,21 +63,21 @@ struct Mode
 struct SimpleMode : Mode
 {
     Hardware& hardware;
-    Hardware::EventPoller::Tag pollerTag;
-    CamJam3::DistanceSensor::Tag distanceTag;
+    Hardware::EventPoller::Subscription pollerSubscription;
+    CamJam3::DistanceSensor::Subscription distanceSubscription;
 
     SimpleMode(Hardware& hw)
         : hardware(hw)
     {
         hardware.event_poller->set_interval(10ms);
-        pollerTag = hardware.event_poller->subscribe([this](const Input::Event& event)
+        pollerSubscription = hardware.event_poller->subscribe([this](const Input::Event& event)
         {
             this->hardware.bot.move(event.direction, event.speed);
         });
         auto& distance = hardware.bot.get_distance_sensor();
         distance.set_interval(1s);
         distance.set_resolution(0.002);
-        distanceTag = distance.subscribe([this](auto&&, float distance)
+        distanceSubscription = distance.subscribe([this](auto&&, float distance)
         {
             hardware.wiimote->rumble(distance < 0.10);
         });
@@ -85,9 +85,7 @@ struct SimpleMode : Mode
 
     ~SimpleMode()
     {
-        hardware.bot.get_distance_sensor().unsubscribe(distanceTag);
         hardware.wiimote->rumble(false);
-        hardware.event_poller->unsubscribe(pollerTag);
     }
 };
 
