@@ -12,6 +12,6 @@ while true; do
     git checkout production
     git reset --hard server/production
     cd ${BIN_DIR}
-    make
+    make pibot
 done
 
