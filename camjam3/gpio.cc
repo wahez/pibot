@@ -45,6 +45,8 @@ namespace Pi
         Init();
 #ifndef NO_WIRINGPI
         pinMode(_pin, OUTPUT);
+#else
+        (void)_pin;
 #endif
     }
 
@@ -63,6 +65,8 @@ namespace Pi
         Init();
 #ifndef NO_WIRINGPI
         pinMode(_pin, INPUT);
+#else
+        (void)_pin;
 #endif
     }
 

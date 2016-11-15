@@ -43,13 +43,13 @@ namespace CamJam3
     private:
         static const constexpr float SpeedOfSound = 343.260;
 
-        friend class StateMachine;
+        friend struct StateMachine;
         Loop::Loop& _loop;
         Pi::OutputPin _trigger;
         Pi::InputPin _echo;
         Duration _interval;
         Duration _resolution;
-        std::unique_ptr<class StateMachine> _state;
+        std::unique_ptr<struct StateMachine> _state;
     };
 
 

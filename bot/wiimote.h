@@ -39,7 +39,7 @@ namespace Input {
         void setLed(unsigned char led, bool state);
 
     private:
-        std::unique_ptr<class WiiMoteImpl> _impl;
+        std::unique_ptr<struct WiiMoteImpl> _impl;
     };
 
 
