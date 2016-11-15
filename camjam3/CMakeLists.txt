@@ -26,6 +26,8 @@ add_library(camjam3
     line_sensor.cc
     motor.h
     motor.cc
+    simulation.h
+    simulation.cc
 )
 
 target_include_directories(camjam3 INTERFACE ..)
@@ -39,6 +41,7 @@ endif()
 add_executable(camjam3_test
     ../doctest/tests.cc
     distance_sensor_test.cc
+    simulation_test.cc
 )
 target_link_libraries(camjam3_test camjam3)
 add_test(camjam3_test camjam3_test)

@@ -17,55 +17,33 @@
     along with pibot++. If not, see <http://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
 #include "gpio.h"
 
-#ifdef NO_WIRINGPI
-#include "simulation.h"
-using namespace CamJam3::Simulation;
-#else
-#include <wiringPi.h>
-#endif
 
-
-namespace Pi
+namespace CamJam3 { namespace Simulation
 {
 
 
-    void Init()
-    {
-        static bool initted = false;
-        if (!initted)
-            wiringPiSetupGpio();
-        initted = true;
-    }
+        enum Direction { OUTPUT, INPUT };
+
+        enum Level { LOW, HIGH };
 
 
-    OutputPin::OutputPin(PinNumber pin)
-        : _pin(pin)
-    {
-        Init();
-        pinMode(_pin, OUTPUT);
-    }
+        void wiringPiSetupGpio();
 
 
-    void OutputPin::set(bool value)
-    {
-        digitalWrite(_pin, value ? HIGH : LOW);
-    }
+        inline void pinMode(Pi::PinNumber, Direction) {}
 
 
-    InputPin::InputPin(PinNumber pin)
-        : _pin(pin)
-    {
-        Init();
-        pinMode(_pin, INPUT);
-    }
+        void digitalWrite(Pi::PinNumber, Level);
 
 
-    bool InputPin::read()
-    {
-        return digitalRead(_pin) == HIGH;
-    }
+        Level digitalRead(Pi::PinNumber);
 
 
-}
+        void set_display(std::ostream*);
+
+
+}}
