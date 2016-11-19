@@ -18,7 +18,6 @@
 */
 
 #include "loop.h"
-#include "mocks.h"
 #include "../doctest/doctest.h"
 
 #include <functional>
@@ -30,6 +29,15 @@ namespace Loop { namespace testing
 
 
     using namespace std::literals;
+
+
+    struct MockAlarmHandler : public AlarmHandler
+    {
+        MockAlarmHandler(std::function<void()> f) : func(f) {}
+        std::function<void()> func;
+        void fire() override { func(); }
+    };
+
 
 
     TEST_CASE("Loop::run empty returns")

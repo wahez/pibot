@@ -17,9 +17,9 @@
     along with pibot++. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "mocks.h"
 #include "duty_cycle.h"
 #include "../doctest/doctest.h"
+#include <cmath>
 
 
 namespace Loop { namespace testing
@@ -55,38 +55,36 @@ namespace Loop { namespace testing
             }
             last = now;
         });
-        MockAlarmHandler stopper([&]() { loop.stop(); });
-        loop.set_alarm(100ms, stopper);
         DutyCycle dc(loop, 10ms, handler);
         SUBCASE("0")
         {
             dc.set_duty_cycle(0);
-            loop.run();
+            loop.run_for(100ms);
 
             CHECK(up_calls == 9);
             CHECK(down_calls == 9);
             CHECK(up_time.count()/1'000'000 == 0);
-            CHECK(down_time.count()/1'000'000 == 90);
+            CHECK(std::abs(down_time.count()/1'000'000 - 90) < 3);
         }
         SUBCASE("0.50")
         {
             dc.set_duty_cycle(0.5);
-            loop.run();
+            loop.run_for(100ms);
 
             CHECK(up_calls == 9);
             CHECK(down_calls == 9);
-            CHECK(up_time.count()/1'000'000 == 45);
-            CHECK(down_time.count()/1'000'000 == 50);
+            CHECK(std::abs(up_time.count()/1'000'000 - 45) < 3);
+            CHECK(std::abs(down_time.count()/1'000'000 - 50) < 3);
         }
         SUBCASE("1")
         {
             dc.set_duty_cycle(1);
-            loop.run();
+            loop.run_for(100ms);
 
             CHECK(up_calls == 9);
             CHECK(down_calls == 8);
-            CHECK(up_time.count()/1'000'000 == 80);
-            CHECK(down_time.count()/1'000'000 == 10);
+            CHECK(std::abs(up_time.count()/1'000'000 - 80) < 3);
+            CHECK(std::abs(down_time.count()/1'000'000 - 10) < 3);
         }
     }
 

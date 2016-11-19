@@ -133,18 +133,18 @@ namespace CamJam3 { namespace Simulation { namespace testing
             }
             SUBCASE("half_forward")
             {
-                for (int i = 0; i < 100; ++i)
+                for (int i = 0; i < 4000; ++i)
                 {
-                    digitalWrite(8, HIGH);
-                    digitalWrite(7, LOW);
-                    digitalWrite(9, HIGH);
-                    digitalWrite(10, LOW);
-                    std::this_thread::sleep_for(1ms);
                     digitalWrite(8, LOW);
                     digitalWrite(7, LOW);
                     digitalWrite(9, LOW);
                     digitalWrite(10, LOW);
-                    std::this_thread::sleep_for(1ms);
+                    std::this_thread::sleep_for(10us);
+                    digitalWrite(8, HIGH);
+                    digitalWrite(7, LOW);
+                    digitalWrite(9, HIGH);
+                    digitalWrite(10, LOW);
+                    std::this_thread::sleep_for(12us);
                 }
                 CHECK(evaluate(os) == half_forward);
             }

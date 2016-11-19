@@ -32,7 +32,6 @@ add_executable(loop_test
     ../doctest/tests.cc
     duty_cycle_test.cc
     loop_test.cc
-    mocks.h
     polled_event_test.cc
     repeated_test.cc
 )
