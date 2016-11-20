@@ -107,6 +107,8 @@ namespace CamJam3 { namespace Simulation
             const Duration half_life;
             T value{};
 
+            ExponentialDecay(Duration hl) : half_life(hl) {}
+
             void add(Duration d, T t)
             {
                 auto decay = std::exp(-d.count() * 1.0/half_life.count());
