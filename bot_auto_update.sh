@@ -2,7 +2,7 @@
 
 SRC_DIR=/home/pi/bot/src
 BIN_DIR=/home/pi/bot/build
-EXEC=${BIN_DIR}/pibot
+EXEC=${BIN_DIR}/bot/pibot
 
 while true; do
     sudo ${EXEC}
