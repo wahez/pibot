@@ -19,6 +19,7 @@
 
 #include "distance_sensor.h"
 #include <boost/variant.hpp>
+#include <boost/units/systems/si/time.hpp>
 #include <chrono>
 
 
@@ -31,10 +32,12 @@ namespace CamJam3
 
     namespace {
 
+        static const auto SpeedOfSound = 343.260 * SI::meters/SI::seconds;
 
-        using TimePoint = std::chrono::high_resolution_clock::time_point;
-        using Duration = std::chrono::high_resolution_clock::duration;
-        auto Now() { return std::chrono::high_resolution_clock::now(); }
+        using Clock = std::chrono::high_resolution_clock;
+        using TimePoint = Clock::time_point;
+        using Duration = Clock::duration;
+
         struct Start {};
         struct Triggering {};
         struct WaitingForHigh { TimePoint started; };
@@ -44,6 +47,16 @@ namespace CamJam3
 
         constexpr const Duration trigger_length = 10us;
 
+
+        auto units_to_chrono(Q<SI::time> time)
+        {
+            return std::chrono::duration<double>(time/SI::seconds);
+        }
+
+        auto chrono_to_units(std::chrono::duration<double> time)
+        {
+            return time.count() * SI::seconds;
+        }
 
     }
 
@@ -68,11 +81,11 @@ namespace CamJam3
         Result operator()(Triggering)
         {
             _sensor._trigger.set(false);
-            return {_sensor._resolution, WaitingForHigh{ Now() }};
+            return {_sensor._resolution, WaitingForHigh{ Clock::now() }};
         }
         Result operator()(const WaitingForHigh& state)
         {
-            auto now = std::chrono::high_resolution_clock::now();
+            auto now = Clock::now();
             if (now > state.started + _sensor._interval)
             {
                 return {_sensor._interval, Start()};
@@ -88,7 +101,7 @@ namespace CamJam3
         }
         Result operator()(const WaitingForLow& state)
         {
-            auto now = std::chrono::high_resolution_clock::now();
+            auto now = Clock::now();
             if (now > state.started + _sensor._interval)
             {
                 return {_sensor._interval, Start()};
@@ -98,9 +111,8 @@ namespace CamJam3
                 return {_sensor._resolution, state};
             }
 
-            using FloatSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
-            auto elapsed = FloatSeconds(now - state.started);
-            auto distance = elapsed.count() * DistanceSensor::SpeedOfSound / 2;
+            auto elapsed = chrono_to_units(now - state.started);
+            auto distance = 0.5 * elapsed * SpeedOfSound;
             _sensor.notify(_sensor, distance);
             return {_sensor._interval, Start()};
         }
@@ -121,17 +133,17 @@ namespace CamJam3
         , _state(new StateMachine(*this))
     {
         set_interval(1s);
-        set_resolution(0.002);
+        set_resolution(0.002 * SI::meters);
     }
 
 
     DistanceSensor::~DistanceSensor() {}
 
 
-    void DistanceSensor::set_resolution(float meters)
+    void DistanceSensor::set_resolution(Distance spacial_resolution)
     {
-        auto resolution = std::chrono::duration<float>(2 * meters / SpeedOfSound);
-        _resolution = std::chrono::duration_cast<Duration>(resolution);
+        auto time = 2.0 * spacial_resolution / SpeedOfSound;
+        _resolution = std::chrono::duration_cast<decltype(_resolution)>(units_to_chrono(time));
     }
 
 

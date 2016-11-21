@@ -76,10 +76,10 @@ struct SimpleMode : Mode
         });
         auto& distance = hardware.bot.get_distance_sensor();
         distance.set_interval(1s);
-        distance.set_resolution(0.002);
-        distanceSubscription = distance.subscribe([this](auto&&, float distance)
+        distance.set_resolution(0.002 * SI::meters);
+        distanceSubscription = distance.subscribe([this](auto&&, auto distance)
         {
-            hardware.wiimote->rumble(distance < 0.10);
+            hardware.wiimote->rumble(distance < 0.10 * SI::meters);
         });
     }
 

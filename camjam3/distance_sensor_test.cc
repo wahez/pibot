@@ -19,6 +19,7 @@
 
 #include "distance_sensor.h"
 #include "../doctest/doctest.h"
+#include <boost/units/io.hpp>
 #include <iostream>
 #include <thread>
 

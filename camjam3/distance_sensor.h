@@ -22,14 +22,25 @@
 #include "gpio.h"
 #include <loop/loop.h>
 #include <loop/subscription_list.h>
+#include <boost/units/quantity.hpp>
+#include <boost/units/systems/si/length.hpp>
 #include <memory>
+
+
+namespace SI = boost::units::si;
 
 
 namespace CamJam3
 {
 
 
-    class DistanceSensor : public Loop::SubscriptionList<DistanceSensor&, float>
+    template<typename T>
+    using Q = boost::units::quantity<T>;
+
+    using Distance = Q<SI::length>;
+
+
+    class DistanceSensor : public Loop::SubscriptionList<DistanceSensor&, Distance>
     {
     public:
         using Duration = std::chrono::high_resolution_clock::duration;
@@ -38,11 +49,9 @@ namespace CamJam3
         ~DistanceSensor();
 
         void set_interval(Duration interval) { _interval = interval; }
-        void set_resolution(float meters);
+        void set_resolution(Distance);
 
     private:
-        static const constexpr float SpeedOfSound = 343.260;
-
         friend struct StateMachine;
         Loop::Loop& _loop;
         Pi::OutputPin _trigger;
