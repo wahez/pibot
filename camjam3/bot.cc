@@ -46,8 +46,8 @@ namespace CamJam3
 
 
     Bot::Bot(Loop::Loop& loop)
-        : _left(loop, 10, 9)
-        , _right(loop, 7, 8)
+        : _left(loop, 8, 7)
+        , _right(loop, 9, 10)
         , _line_sensor(25)
         , _distance_sensor(17, 18, loop)
     {}
