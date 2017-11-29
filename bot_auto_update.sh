@@ -8,9 +8,9 @@ while true; do
     sudo ${EXEC}
     cd ${SRC_DIR}
     git stash
-    git fetch server
+    git fetch origin
     git checkout production
-    git reset --hard server/production
+    git reset --hard origin/production
     cd ${BIN_DIR}
     make pibot
 done
