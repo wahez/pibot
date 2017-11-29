@@ -25,6 +25,7 @@ add_library(loop
     polled_event.h
     repeated.h
     repeated.cc
+    state_machine.h
     subscription_list.h
 )
 

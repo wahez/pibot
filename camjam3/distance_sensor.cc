@@ -18,6 +18,7 @@
 */
 
 #include "distance_sensor.h"
+#include <loop/state_machine.h>
 #include <boost/variant.hpp>
 #include <boost/units/systems/si/time.hpp>
 #include <chrono>
@@ -27,10 +28,9 @@ namespace CamJam3
 {
 
 
-    using namespace std::literals;
-
-
     namespace {
+
+        using namespace std::literals;
 
         static const auto SpeedOfSound = 343.260 * SI::meters/SI::seconds;
 
@@ -42,11 +42,8 @@ namespace CamJam3
         struct Triggering {};
         struct WaitingForHigh { TimePoint started; };
         struct WaitingForLow  { TimePoint started; };
-        using State = boost::variant<Start, Triggering, WaitingForHigh, WaitingForLow>;
-        using Result = std::pair<Duration, State>;
 
         constexpr const Duration trigger_length = 10us;
-
 
         auto units_to_chrono(Q<SI::time> time)
         {
@@ -61,27 +58,28 @@ namespace CamJam3
     }
 
 
-    struct StateMachine : public Loop::AlarmHandler, public boost::static_visitor<Result>
+    struct StateMachine
     {
+        using StateMachineT = Loop::StateMachineT<StateMachine, Start, Triggering, WaitingForHigh, WaitingForLow>;
+        using Result = std::pair<Duration, StateMachineT::State>;
         DistanceSensor& _sensor;
-        State _state = Start{};
+        StateMachineT stateMachine;
 
         StateMachine(DistanceSensor& sensor)
-            : AlarmHandler(sensor._loop)
-            , _sensor(sensor)
+            : _sensor(sensor)
+            , stateMachine(*this, _sensor._loop)
         {
-            _sensor._loop.set_alarm(_sensor._interval, *this);
         }
 
-        Result operator()(Start)
+        auto operator()(Start)
         {
             _sensor._trigger.set(true);
-            return {trigger_length, Triggering()};
+            return std::make_pair(trigger_length, Triggering());
         }
-        Result operator()(Triggering)
+        auto operator()(Triggering)
         {
             _sensor._trigger.set(false);
-            return {_sensor._resolution, WaitingForHigh{ Clock::now() }};
+            return std::make_pair(_sensor._resolution, WaitingForHigh{ Clock::now() });
         }
         Result operator()(const WaitingForHigh& state)
         {
@@ -115,13 +113,6 @@ namespace CamJam3
             auto distance = 0.5 * elapsed * SpeedOfSound;
             _sensor.notify(_sensor, distance);
             return {_sensor._interval, Start()};
-        }
-
-        void fire() override
-        {
-            Result delay_state = boost::apply_visitor(*this, _state);
-            _state = delay_state.second;
-            _sensor._loop.set_alarm(delay_state.first, *this);
         }
     };
 
