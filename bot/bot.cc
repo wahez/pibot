@@ -79,7 +79,7 @@ struct SimpleMode : Mode
         distance.set_resolution(0.002 * SI::meters);
         distanceSubscription = distance.subscribe([this](auto&&, auto distance)
         {
-            hardware.wiimote->rumble(distance < 0.10 * SI::meters);
+            hardware.wiimote->rumble(distance < 0.20 * SI::meters);
         });
     }
 

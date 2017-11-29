@@ -130,9 +130,9 @@ namespace CamJam3
         : _loop(loop)
         , _trigger(trigger)
         , _echo(echo)
+        , _interval(1s)
         , _state(new StateMachine(*this))
     {
-        set_interval(1s);
         set_resolution(0.002 * SI::meters);
     }
 
