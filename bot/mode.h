@@ -20,15 +20,21 @@
 #pragma once
 
 
-namespace Input {
+namespace Modes {
 
 
-    struct Event
+    enum class Type
     {
-        bool shutdown = false;
-        float direction = 0; // rad, 0 = forward
-        float speed = 0; // 1 is max
-        bool switch_mode = false;
+        startup,
+        simple,
+        shutdown
+    };
+
+
+    struct Base
+    {
+        virtual ~Base() {}
+        virtual Type get_type() const = 0;
     };
 
 

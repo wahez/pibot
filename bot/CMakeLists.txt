@@ -18,8 +18,12 @@
 
 add_library(bot
     event.h
+    hardware.h
     input.h
     input.cc
+    mode.h
+    simple_mode.h
+    startup_mode.h
     wiimote.h
     wiimote.cc
 )

@@ -17,115 +17,36 @@
     along with pibot++. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "wiimote.h"
-#include <camjam3/bot.h>
-#include <loop/loop.h>
-#include <loop/polled_event.h>
-#include <iostream>
-#include <cmath>
-#include <chrono>
+#include "hardware.h"
+#include "startup_mode.h"
+#include "simple_mode.h"
 
 
 using namespace std::literals;
 
 
-struct Hardware
-{
-    Loop::Loop loop;
-    CamJam3::Bot bot;
-    std::unique_ptr<Input::WiiMote> wiimote;
-
-    using EventPoller = Loop::PolledEvent<Input::Event>;
-    std::unique_ptr<EventPoller> event_poller;
-
-    Hardware()
-        : loop()
-        , bot(loop)
-    {}
-
-    void set_wiimote(std::unique_ptr<Input::WiiMote> wm)
-    {
-        wiimote = std::move(wm);
-        if (!event_poller)
-        {
-            event_poller = std::make_unique<EventPoller>(loop, 10ms, [this]() { return this->wiimote->getEvent(); });
-        }
-    }
-};
-
-
-struct Mode
-{
-    virtual ~Mode() {}
-};
-
-
-struct SimpleMode : Mode
-{
-    Hardware& hardware;
-    Hardware::EventPoller::Subscription pollerSubscription;
-    CamJam3::DistanceSensor::Subscription distanceSubscription;
-
-    SimpleMode(Hardware& hw)
-        : hardware(hw)
-    {
-        hardware.event_poller->set_interval(10ms);
-        pollerSubscription = hardware.event_poller->subscribe([this](const Input::Event& event)
-        {
-            this->hardware.bot.move(event.direction, event.speed);
-        });
-        auto& distance = hardware.bot.get_distance_sensor();
-        distance.set_interval(1s);
-        distance.set_resolution(0.002 * SI::meters);
-        distanceSubscription = distance.subscribe([this](auto&&, auto distance)
-        {
-            hardware.wiimote->rumble(distance < 0.20 * SI::meters);
-        });
-    }
-
-    ~SimpleMode()
-    {
-        hardware.wiimote->rumble(false);
-    }
-};
-
-
 struct Program
 {
-    Hardware hardware;
-    std::unique_ptr<Mode> mode;
+    Bot::Hardware hardware;
+    std::unique_ptr<Modes::Base> mode;
 
     void run()
     {
-        for (;;)
+        mode = std::make_unique<Modes::Startup>(hardware);
+        auto subscription = hardware.event_poller.subscribe([this](const Input::Event& event)
         {
-            try
+            if (event.switch_mode)
             {
-                hardware.bot.move(0.5*M_PI, 1);
-                hardware.loop.run_for(100ms);
-                hardware.bot.move(1.5*M_PI, 1);
-                hardware.loop.run_for(100ms);
-                hardware.bot.move(0, 0);
-                hardware.loop.run_for(100ms);
-                std::cout << "Press 1+2 on the wiimote" << std::endl;
-                //window.text("Press 1+2 on the wiimote");
-                auto wiimote = std::make_unique<Input::WiiMote>();
-                hardware.set_wiimote(std::move(wiimote));
-                break;
+                switch (mode->get_type())
+                {
+                    case Modes::Type::startup:
+                    mode = std::make_unique<Modes::Simple>(hardware);
+                    break;
+                    case Modes::Type::simple:
+                    case Modes::Type::shutdown:
+                    break;
+                }
             }
-            catch (const std::runtime_error& ex)
-            {
-                std::cout << ex.what() << std::endl;
-            }
-        }
-        std::cout << "OK" << std::endl;
-        hardware.wiimote->rumble(true);
-        hardware.loop.run_for(100ms);
-        hardware.wiimote->rumble(false);
-
-        mode = std::make_unique<SimpleMode>(hardware);
-        hardware.event_poller->subscribe([this](const Input::Event& event)
-        {
             if (event.shutdown) this->hardware.loop.stop();
         });
         hardware.loop.run();

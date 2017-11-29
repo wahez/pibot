@@ -19,37 +19,40 @@
 
 #pragma once
 
-#include "loop.h"
-#include "subscription_list.h"
-#include "repeated.h"
+#include "wiimote.h"
+#include <camjam3/bot.h>
+#include <loop/loop.h>
+#include <loop/polled_event.h>
+#include <memory>
+#include <chrono>
 
 
-namespace Loop
-{
+namespace Bot {
 
 
-    template<typename Data>
-    class PolledEvent : public RepeatedBase, public SubscriptionList<Data>
+    using namespace std::literals;
+
+
+    struct Hardware
     {
-    public:
-        using Tag = typename SubscriptionList<Data>::Tag;
-        using Getter = std::function<Data()>;
-        using Callback = typename SubscriptionList<Data>::Callback;
+        Loop::Loop loop;
+        CamJam3::Bot bot;
+        std::unique_ptr<Input::WiiMote> wiimote;
 
-        PolledEvent(Loop& loop, Duration duration, Getter data_getter)
-            : RepeatedBase(loop, duration)
-            , _data_getter(std::move(data_getter))
+        using EventPoller = Loop::PolledEvent<Input::Event>;
+        EventPoller event_poller;
+
+        Hardware()
+            : loop()
+            , bot(loop)
+            , event_poller(loop, 10ms, []() { return Input::Event{}; })
         {}
 
-        void set_getter(Getter getter) { _data_getter = std::move(getter); }
-
-    private:
-        void repeat() override
+        void set_wiimote(std::unique_ptr<Input::WiiMote> wm)
         {
-            this->notify(_data_getter());
+            wiimote = std::move(wm);
+            event_poller.set_getter([this]() { return this->wiimote->getEvent(); });
         }
-
-        Getter _data_getter;
     };
 
 
