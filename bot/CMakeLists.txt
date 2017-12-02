@@ -17,6 +17,8 @@
 
 
 add_library(bot
+    autonomous_mode.h
+    autonomous_mode.cc
     event.h
     hardware.h
     input.h

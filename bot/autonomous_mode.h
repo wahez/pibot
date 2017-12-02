@@ -1,5 +1,5 @@
 /*
-    Copyright 2016 Walther Zwart
+    Copyright 2017 Walther Zwart
 
     This file is part of pibot++.
 
@@ -19,23 +19,23 @@
 
 #pragma once
 
+#include "hardware.h"
+#include "mode.h"
+
 
 namespace Modes {
 
 
-    enum class Type
+    struct Autonomous : Base
     {
-        autonomous,
-        startup,
-        simple,
-        shutdown
-    };
+        Bot::Hardware& hardware;
+        CamJam3::DistanceSensor::Subscription distanceSubscription;
 
+        explicit Autonomous(Bot::Hardware& hw);
 
-    struct Base
-    {
-        virtual ~Base() {}
-        virtual Type get_type() const = 0;
+        Type get_type() const override { return Type::autonomous; }
+
+        ~Autonomous();
     };
 
 

@@ -20,6 +20,7 @@
 #include "hardware.h"
 #include "startup_mode.h"
 #include "simple_mode.h"
+#include "autonomous_mode.h"
 
 
 using namespace std::literals;
@@ -39,10 +40,15 @@ struct Program
             {
                 switch (mode->get_type())
                 {
+                    case Modes::Type::autonomous:
+                    mode = std::make_unique<Modes::Simple>(hardware);
+                    break;
                     case Modes::Type::startup:
                     mode = std::make_unique<Modes::Simple>(hardware);
                     break;
                     case Modes::Type::simple:
+                    mode = std::make_unique<Modes::Autonomous>(hardware);
+                    break;
                     case Modes::Type::shutdown:
                     break;
                 }
