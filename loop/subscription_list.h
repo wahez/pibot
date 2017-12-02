@@ -39,7 +39,7 @@ namespace Loop
         using SubscriptionData = std::pair<Tag, SubscriptionList&>;
         struct Deleter
         {
-			void operator()(SubscriptionData* data) const { data->second.unsubscribe(data->first); delete data; }
+            void operator()(SubscriptionData* data) const { data->second.unsubscribe(data->first); delete data; }
         };
         using Subscription = std::unique_ptr<SubscriptionData, Deleter>;
 

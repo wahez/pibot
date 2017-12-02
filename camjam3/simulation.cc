@@ -23,6 +23,7 @@
 #include <memory>
 #include <cmath>
 #include <ostream>
+#include <chrono>
 
 
 namespace CamJam3 { namespace Simulation

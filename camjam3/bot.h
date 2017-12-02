@@ -22,7 +22,9 @@
 #include "distance_sensor.h"
 #include "motor.h"
 #include "line_sensor.h"
-#include <loop/loop.h>
+
+
+namespace Loop { class Loop; }
 
 
 namespace CamJam3

@@ -20,14 +20,17 @@
 #pragma once
 
 #include "gpio.h"
-#include <loop/loop.h>
 #include <loop/subscription_list.h>
 #include <boost/units/quantity.hpp>
 #include <boost/units/systems/si/length.hpp>
 #include <memory>
+#include <chrono>
 
 
 namespace SI = boost::units::si;
+
+
+namespace Loop { class Loop; }
 
 
 namespace CamJam3

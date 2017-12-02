@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "loop.h"
 #include "subscription_list.h"
 #include "repeated.h"
 

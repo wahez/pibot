@@ -20,6 +20,7 @@
 #pragma once
 
 #include "gpio.h"
+#include <ostream>
 
 
 namespace CamJam3 { namespace Simulation

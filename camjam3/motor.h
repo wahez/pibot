@@ -20,7 +20,6 @@
 #pragma once
 
 #include "gpio.h"
-#include <loop/loop.h>
 #include <loop/duty_cycle.h>
 
 
@@ -31,7 +30,7 @@ namespace CamJam3
     class Motor
     {
     public:
-        Motor(Loop::Loop&, Pi::PinNumber forwardPin, Pi::PinNumber reversePin);
+        Motor(class Loop::Loop&, Pi::PinNumber forwardPin, Pi::PinNumber reversePin);
 
         void stop()    { move(0); }
         void forward() { move(1); }
